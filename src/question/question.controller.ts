@@ -26,4 +26,9 @@ export class QuestionController {
   findAll(): Promise<Question[]> {
     return this.questionService.findAll();
   }
+
+  @Get('random')
+  findRandom(): Promise<Question> {
+    return this.questionService.findRandom();
+  }
 }

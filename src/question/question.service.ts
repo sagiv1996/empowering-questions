@@ -22,4 +22,11 @@ export class QuestionService {
   async findAll(): Promise<Question[]> {
     return this.questionModel.find();
   }
+
+  async findRandom(): Promise<Question> {
+    const [randomQuestion] = await this.questionModel.aggregate([
+      { $sample: { size: 1 } },
+    ]);
+    return randomQuestion;
+  }
 }
