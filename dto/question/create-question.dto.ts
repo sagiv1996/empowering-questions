@@ -1,8 +1,8 @@
 import { IsEnum, IsString } from 'class-validator';
 
-enum categories {
+export enum categories {
   'confidence' = 'confidence',
-  'Physical activity and nutrition' = 'Physical activity and nutrition',
+  'Sport' = 'Sport',
   'relationship' = 'relationship',
 }
 export class CreateQuestion {

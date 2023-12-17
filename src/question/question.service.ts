@@ -10,7 +10,7 @@ export class QuestionService {
     @InjectModel(Question.name) private questionModel: Model<Question>,
   ) {}
 
-  async create(createQuestion: CreateQuestion): Promise<Question> {
+  async createQuestion(createQuestion: CreateQuestion): Promise<Question> {
     try {
       const question = await this.questionModel.create(createQuestion);
       return question;
@@ -19,11 +19,7 @@ export class QuestionService {
     }
   }
 
-  async findAll(): Promise<Question[]> {
-    return this.questionModel.find();
-  }
-
-  async findRandom(): Promise<Question> {
+  async findRandomQuestion(): Promise<Question> {
     const [randomQuestion] = await this.questionModel.aggregate([
       { $sample: { size: 1 } },
     ]);
