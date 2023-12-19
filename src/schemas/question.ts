@@ -31,7 +31,7 @@ export class Question {
   @Prop({
     type: [
       {
-        userId: { type: String, required: true, ref: 'User' },
+        userId: { type: String, required: true, ref: 'User', unique: true },
         rank: { type: Number, required: true, min: 1, max: 5 },
       },
     ],

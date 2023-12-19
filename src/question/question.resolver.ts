@@ -10,6 +10,7 @@ import {
 import { QuestionService } from './question.service';
 import { Question, Genders } from 'src/schemas/question';
 import { Categories } from 'src/schemas/question';
+import { ObjectId } from 'mongoose';
 
 registerEnumType(Categories, {
   name: 'QuestionCategory',
@@ -58,6 +59,21 @@ export class QuestionResolver {
     return this.questionService.findRandomQuestion({
       gender,
       categories,
+    });
+  }
+
+  @Mutation(() => QuestionType)
+  async rankQuestion(
+    @Args('questionId')
+    questionId: string,
+    @Args('userId')
+    userId: string,
+    @Args('rank') rank: number,
+  ): Promise<Question> {
+    return this.questionService.rankQuestion({
+      questionId: questionId as unknown as ObjectId,
+      userId: userId as unknown as ObjectId,
+      rank,
     });
   }
 }
