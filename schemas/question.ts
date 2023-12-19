@@ -1,7 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { categories } from 'dto/question/create-question.dto';
 import { HydratedDocument } from 'mongoose';
 
+export enum categories {
+  'confidence' = 'confidence',
+  'Sport' = 'Sport',
+  'relationship' = 'relationship',
+}
 export type QuestionDocument = HydratedDocument<Question>;
 
 @Schema()

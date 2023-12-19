@@ -5,12 +5,11 @@ import {
   Field,
   Mutation,
   Args,
-  Int,
   registerEnumType,
 } from '@nestjs/graphql';
 import { QuestionService } from './question.service';
 import { Question } from 'schemas/question';
-import { categories } from 'dto/question/create-question.dto';
+import { categories } from 'schemas/question';
 
 registerEnumType(categories, {
   name: 'QuestionCategory',

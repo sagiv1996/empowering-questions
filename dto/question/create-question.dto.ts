@@ -1,10 +1,6 @@
 import { IsEnum, IsString } from 'class-validator';
+import { categories } from 'schemas/question';
 
-export enum categories {
-  'confidence' = 'confidence',
-  'Sport' = 'Sport',
-  'relationship' = 'relationship',
-}
 export class CreateQuestion {
   @IsString()
   string: string;
