@@ -8,11 +8,14 @@ import {
   registerEnumType,
 } from '@nestjs/graphql';
 import { QuestionService } from './question.service';
-import { Question } from 'schemas/question';
+import { Question, genders } from 'schemas/question';
 import { categories } from 'schemas/question';
 
 registerEnumType(categories, {
   name: 'QuestionCategory',
+});
+registerEnumType(genders, {
+  name: 'QuestionGenders',
 });
 
 @ObjectType()
@@ -25,6 +28,9 @@ export class QuestionType {
 
   @Field()
   category: categories;
+
+  @Field()
+  gender: genders;
 }
 
 @Resolver(() => QuestionType)
@@ -34,12 +40,13 @@ export class QuestionResolver {
   @Mutation(() => QuestionType)
   createQuestion(
     @Args('string') newString: string,
-    @Args('category', { type: () => categories })
-    newCategory: categories,
+    @Args('category', { type: () => categories }) newCategory: categories,
+    @Args('gender', { type: () => genders }) newGender: genders,
   ): Promise<Question> {
     return this.questionService.createQuestion({
       string: newString,
       category: newCategory,
+      gender: newGender,
     });
   }
 

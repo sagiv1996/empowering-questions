@@ -6,6 +6,11 @@ export enum categories {
   'Sport' = 'Sport',
   'relationship' = 'relationship',
 }
+
+export enum genders {
+  'male' = 'male',
+  'female' = 'female',
+}
 export type QuestionDocument = HydratedDocument<Question>;
 
 @Schema()
@@ -19,6 +24,9 @@ export class Question {
     enum: categories,
   })
   category: string;
+
+  @Prop({ type: String, required: true, enum: genders })
+  gender: string;
 }
 
 export const QuestionSchema = SchemaFactory.createForClass(Question);
