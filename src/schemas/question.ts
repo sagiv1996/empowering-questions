@@ -27,6 +27,17 @@ export class Question {
 
   @Prop({ type: String, required: true, enum: Genders })
   gender: string;
+
+  @Prop({
+    type: [
+      {
+        userId: { type: String, required: true, ref: 'User' },
+        rank: { type: Number, required: true, min: 1, max: 5 },
+      },
+    ],
+    default: [],
+  })
+  ranking: { userId: string; rank: number }[];
 }
 
 export const QuestionSchema = SchemaFactory.createForClass(Question);
