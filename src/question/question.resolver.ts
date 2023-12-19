@@ -8,8 +8,8 @@ import {
   registerEnumType,
 } from '@nestjs/graphql';
 import { QuestionService } from './question.service';
-import { Question, Genders } from 'schemas/question';
-import { Categories } from 'schemas/question';
+import { Question, Genders } from 'src/schemas/question';
+import { Categories } from 'src/schemas/question';
 
 registerEnumType(Categories, {
   name: 'QuestionCategory',

@@ -1,6 +1,6 @@
 import { Transform } from 'class-transformer';
 import { IsArray, IsEnum } from 'class-validator';
-import { Categories, Genders } from 'schemas/question';
+import { Categories, Genders } from 'src/schemas/question';
 
 export class GetRandomQuestion {
   @IsArray()

@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { QuestionService } from './question.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Question, QuestionSchema } from 'schemas/question';
+import { Question, QuestionSchema } from 'src/schemas/question';
 import { QuestionResolver } from './question.resolver';
 
 @Module({

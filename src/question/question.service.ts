@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { CreateQuestion } from 'dto/question/create-question.dto';
-import { GetRandomQuestion } from 'dto/question/get-random-question.dto';
+import { CreateQuestion } from 'src/dto/question/create-question.dto';
+import { GetRandomQuestion } from 'src/dto/question/get-random-question.dto';
 import { Model } from 'mongoose';
-import { Question } from 'schemas/question';
+import { Question } from 'src/schemas/question';
 
 @Injectable()
 export class QuestionService {
