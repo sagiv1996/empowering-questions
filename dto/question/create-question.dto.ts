@@ -1,13 +1,13 @@
 import { IsEnum, IsString } from 'class-validator';
-import { categories, genders } from 'schemas/question';
+import { Categories, Genders } from 'schemas/question';
 
 export class CreateQuestion {
   @IsString()
   string: string;
 
-  @IsEnum(categories, { each: true })
-  category: categories;
+  @IsEnum(Categories, { each: true })
+  category: Categories;
 
-  @IsEnum(genders, { each: true })
-  gender: genders;
+  @IsEnum(Genders, { each: true })
+  gender: Genders;
 }

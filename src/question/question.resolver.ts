@@ -8,13 +8,13 @@ import {
   registerEnumType,
 } from '@nestjs/graphql';
 import { QuestionService } from './question.service';
-import { Question, genders } from 'schemas/question';
-import { categories } from 'schemas/question';
+import { Question, Genders } from 'schemas/question';
+import { Categories } from 'schemas/question';
 
-registerEnumType(categories, {
+registerEnumType(Categories, {
   name: 'QuestionCategory',
 });
-registerEnumType(genders, {
+registerEnumType(Genders, {
   name: 'QuestionGenders',
 });
 
@@ -27,10 +27,10 @@ export class QuestionType {
   string: string;
 
   @Field()
-  category: categories;
+  category: Categories;
 
   @Field()
-  gender: genders;
+  gender: Genders;
 }
 
 @Resolver(() => QuestionType)
@@ -40,8 +40,8 @@ export class QuestionResolver {
   @Mutation(() => QuestionType)
   createQuestion(
     @Args('string') newString: string,
-    @Args('category', { type: () => categories }) newCategory: categories,
-    @Args('gender', { type: () => genders }) newGender: genders,
+    @Args('category', { type: () => Categories }) newCategory: Categories,
+    @Args('gender', { type: () => Genders }) newGender: Genders,
   ): Promise<Question> {
     return this.questionService.createQuestion({
       string: newString,
@@ -51,7 +51,13 @@ export class QuestionResolver {
   }
 
   @Query(() => QuestionType)
-  findRandom(): Promise<Question> {
-    return this.questionService.findRandomQuestion();
+  findRandom(
+    @Args('category', { type: () => [Categories] }) categories: Categories[],
+    @Args('gender', { type: () => Genders }) gender: Genders,
+  ): Promise<Question> {
+    return this.questionService.findRandomQuestion({
+      gender,
+      categories,
+    });
   }
 }
