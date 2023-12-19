@@ -30,6 +30,16 @@ export class QuestionService {
           category: { $in: getRandomQuestion.categories },
         },
       },
+      {
+        $addFields: {
+          avgRanking: { $avg: '$ranking.rank' },
+        },
+      },
+      {
+        $match: {
+          avgRanking: { $gte: 3.5 },
+        },
+      },
       { $sample: { size: 1 } },
     ]);
     return randomQuestion;
