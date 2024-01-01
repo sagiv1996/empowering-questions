@@ -19,4 +19,9 @@ export class UserService {
       throw e;
     }
   }
+
+  async getAll() {
+    const users = await this.userModel.find({ frequency: Frequency.extra });
+    return users;
+  }
 }
