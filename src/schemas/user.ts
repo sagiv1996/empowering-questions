@@ -11,7 +11,7 @@ export enum Frequency {
 
 @Schema()
 export class User {
-  @Prop({ type: String, required: true })
+  @Prop({ type: String, required: true, unique: true, index: true })
   firebaseId: string;
 
   @Prop({ type: String, enum: Frequency, required: true })
