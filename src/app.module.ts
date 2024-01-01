@@ -7,6 +7,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { QuestionResolver } from './question/question.resolver';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { QuestionResolver } from './question/question.resolver';
       inject: [ConfigService],
     }),
     QuestionModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],
