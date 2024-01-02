@@ -14,10 +14,11 @@ export class QuestionService {
 
   async createQuestion(createQuestion: CreateQuestion): Promise<Question> {
     try {
-      const question = await this.questionModel.create(createQuestion);
+      const question = new this.questionModel({ ...createQuestion });
+      await question.save();
       return question;
-    } catch {
-      throw 'Error';
+    } catch (error) {
+      throw 'Error creating question';
     }
   }
 
