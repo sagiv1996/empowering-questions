@@ -8,9 +8,10 @@ import {
   registerEnumType,
 } from '@nestjs/graphql';
 import { QuestionService } from './question.service';
-import { Question, Genders } from 'src/schemas/question';
+import { Question } from 'src/schemas/question';
 import { Categories } from 'src/schemas/question';
 import { ObjectId } from 'mongoose';
+import { Genders } from 'src/schemas/user';
 
 registerEnumType(Categories, {
   name: 'QuestionCategory',
@@ -51,11 +52,11 @@ export class QuestionResolver {
     });
   }
 
-  @Query(() => QuestionType)
+  @Query(() => [QuestionType])
   findRandom(
     @Args('category', { type: () => [Categories] }) categories: Categories[],
     @Args('gender', { type: () => Genders }) gender: Genders,
-  ): Promise<Question> {
+  ): Promise<Question[]> {
     return this.questionService.findRandomQuestion({
       gender,
       categories,

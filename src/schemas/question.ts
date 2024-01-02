@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
+import { Genders } from './user';
 
 export enum Categories {
   'confidence' = 'confidence',
@@ -7,10 +8,6 @@ export enum Categories {
   'relationship' = 'relationship',
 }
 
-export enum Genders {
-  'male' = 'male',
-  'female' = 'female',
-}
 export type QuestionDocument = HydratedDocument<Question>;
 
 @Schema()
@@ -23,10 +20,10 @@ export class Question {
     required: true,
     enum: Categories,
   })
-  category: string;
+  category: Categories;
 
   @Prop({ type: String, required: true, enum: Genders })
-  gender: string;
+  gender: Genders;
 
   @Prop({
     type: [

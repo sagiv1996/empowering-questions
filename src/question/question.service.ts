@@ -18,18 +18,20 @@ export class QuestionService {
       await question.save();
       return question;
     } catch (error) {
+      console.error({ error });
       throw 'Error creating question';
     }
   }
 
   async findRandomQuestion(
     getRandomQuestion: GetRandomQuestion,
-  ): Promise<Question> {
-    const [randomQuestion] = await this.questionModel.aggregate([
+  ): Promise<Question[]> {
+    const { size = 3, gender, categories } = getRandomQuestion;
+    const randomQuestion = await this.questionModel.aggregate([
       {
         $match: {
-          gender: getRandomQuestion.gender,
-          category: { $in: getRandomQuestion.categories },
+          gender: gender,
+          category: { $in: categories },
         },
       },
       {
@@ -42,7 +44,7 @@ export class QuestionService {
           avgRanking: { $gte: 3.5 },
         },
       },
-      { $sample: { size: 1 } },
+      { $sample: { size } },
     ]);
     return randomQuestion;
   }

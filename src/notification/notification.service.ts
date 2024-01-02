@@ -1,6 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { User } from 'src/schemas/user';
+import { QuestionService } from 'src/question/question.service';
+import { Categories } from 'src/schemas/question';
+import { Genders, User } from 'src/schemas/user';
 import { UserService } from 'src/user/user.service';
 
 @Injectable()
@@ -8,16 +10,33 @@ export class NotificationService {
   @Inject(UserService)
   private readonly userService: UserService;
 
+  @Inject(QuestionService)
+  private readonly questionService: QuestionService;
+
   @Cron('*/5 * * * * *')
   async main() {
     const users = await this.userService.getAll();
+
+    const notificationsForUser = [];
+
     for (const user of users) {
       const sumOfNotificationsPerDay = this.sumOfNotificationsPerDay(user);
       const timeForNotifications = this.getRandomDate(
         sumOfNotificationsPerDay,
         {},
       );
-      console.log({ user, timeForNotifications });
+
+      const questionsForUser = await this.questionService.findRandomQuestion({
+        categories: user.categories,
+        gender: user.gender,
+      });
+
+      questionsForUser.forEach((value, index) => {
+        notificationsForUser.push({
+          string: value.string,
+          date: timeForNotifications[index],
+        });
+      });
     }
   }
 

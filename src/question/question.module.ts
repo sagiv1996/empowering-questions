@@ -11,5 +11,6 @@ import { QuestionResolver } from './question.resolver';
     ]),
   ],
   providers: [QuestionService, QuestionResolver],
+  exports: [QuestionService],
 })
 export class QuestionModule {}

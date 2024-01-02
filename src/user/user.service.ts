@@ -13,6 +13,8 @@ export class UserService {
       const user = await this.userModel.create({
         firebaseId: createUser.firebaseId,
         frequency: createUser.frequency,
+        gender: createUser.gender,
+        categories: createUser.categories,
       });
       return user;
     } catch (e) {
