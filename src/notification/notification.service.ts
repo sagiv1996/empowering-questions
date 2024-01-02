@@ -8,9 +8,8 @@ export class NotificationService {
   @Inject(UserService)
   private readonly userService: UserService;
 
-  @Cron('*/10 * * * * *')
+  @Cron('*/5 * * * * *')
   async main() {
-    console.log('Start codeing..');
     const users = await this.userService.getAll();
     for (const user of users) {
       const sumOfNotificationsPerDay = this.sumOfNotificationsPerDay(user);
@@ -23,7 +22,7 @@ export class NotificationService {
   }
 
   sumOfNotificationsPerDay(user: User): number {
-    const frequencyObject = { little: 1, normal: 5, extra: 7 };
+    const frequencyObject = { little: 1, normal: 5, extra: 6 };
     const randomNumberFrom0To3 = Math.floor(
       Math.random() * 3 + frequencyObject[user.frequency],
     );
@@ -34,12 +33,22 @@ export class NotificationService {
 
   getRandomDate(
     sumOfNotification: number,
-    { from = new Date().setHours(8), to = new Date().setHours(21) },
+    { from = 8, to = 21 }: { from?: number; to?: number },
   ) {
-    const resArray = [];
-    for (let i = 0; i < sumOfNotification; i++) {
-      resArray.push(new Date(from + Math.random() * (to - from)));
-    }
-    return resArray.sort();
+    const randomHours = new Set<number>();
+    do {
+      const randomHour = Math.floor(Math.random() * (to - from + 1)) + from;
+      randomHours.add(randomHour);
+    } while (randomHours.size <= sumOfNotification);
+
+    const randomTimes: Date[] = [];
+
+    randomHours.forEach((randomHour) => {
+      const randomMinute = Math.floor(Math.random() * (60 + 1));
+
+      const date = new Date(new Date().setHours(randomHour, randomMinute));
+      randomTimes.push(date);
+    });
+    return randomTimes.sort();
   }
 }

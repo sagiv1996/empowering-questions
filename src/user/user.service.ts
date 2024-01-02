@@ -21,7 +21,7 @@ export class UserService {
   }
 
   async getAll() {
-    const users = await this.userModel.find({ frequency: Frequency.extra });
+    const users = await this.userModel.find();
     return users;
   }
 }
