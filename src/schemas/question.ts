@@ -15,7 +15,7 @@ export type QuestionDocument = HydratedDocument<Question>;
 
 @Schema()
 export class Question {
-  @Prop({ required: true, unique: true, type: String })
+  @Prop({ type: String, required: true, unique: true, index: true })
   string: string;
 
   @Prop({
@@ -31,11 +31,11 @@ export class Question {
   @Prop({
     type: [
       {
-        userId: { type: String, required: true, ref: 'User', unique: true },
+        userId: { type: String, required: true, ref: 'User' },
         rank: { type: Number, required: true, min: 1, max: 5 },
       },
     ],
-    default: [],
+    default: undefined,
   })
   ranking: { userId: string; rank: number }[];
 }
