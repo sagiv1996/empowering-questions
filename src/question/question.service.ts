@@ -3,14 +3,46 @@ import { InjectModel } from '@nestjs/mongoose';
 import { CreateQuestion } from 'src/question/dto/create-question.dto';
 import { GetRandomQuestion } from 'src/question/dto/get-random-question.dto';
 import { Model } from 'mongoose';
-import { Question } from 'src/schemas/question';
+import { Categories, Question } from 'src/schemas/question';
 import { RankQuestion } from './dto/rank-question.dto';
+import { Cron } from '@nestjs/schedule';
+import { Genders } from 'src/schemas/user';
+import { ConfigService } from '@nestjs/config';
+import { fetchDataFromGemini } from './utils';
 
 @Injectable()
 export class QuestionService {
   constructor(
     @InjectModel(Question.name) private questionModel: Model<Question>,
+    private readonly configService: ConfigService,
   ) {}
+
+  private readonly geminiApiKey =
+    this.configService.get<string>('GEMINI_API_KEY');
+  @Cron('*/15 * * * * *')
+  async createQuestionFromAi() {
+    const fetchAndInsertFunctions: Promise<void>[] = [];
+    Object.values(Genders).forEach((gender) => {
+      Object.values(Categories).forEach((category) => {
+        fetchAndInsertFunctions.push(this.fetchAndInsert(category, gender));
+      });
+    });
+    await Promise.allSettled(fetchAndInsertFunctions);
+  }
+
+  private async fetchAndInsert(category: Categories, gender: Genders) {
+    const dataFromGemini = await fetchDataFromGemini(
+      category,
+      gender,
+      this.geminiApiKey,
+    );
+    const createQuestion: CreateQuestion = {
+      category,
+      gender,
+      string: dataFromGemini,
+    };
+    await this.createQuestion(createQuestion);
+  }
 
   async createQuestion(createQuestion: CreateQuestion): Promise<Question> {
     try {
