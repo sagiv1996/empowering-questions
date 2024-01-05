@@ -28,6 +28,9 @@ export class QuestionService {
       });
     });
     await Promise.allSettled(fetchAndInsertFunctions);
+
+    const count = await this.questionModel.countDocuments();
+    console.log({ count });
   }
 
   private async fetchAndInsert(category: Categories, gender: Genders) {
@@ -41,6 +44,7 @@ export class QuestionService {
       gender,
       string: dataFromGemini,
     };
+
     await this.createQuestion(createQuestion);
   }
 

@@ -1,0 +1,11 @@
+version: '3.8'
+services:
+  api: 
+    build: .
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm run start:dev
+    env_file:
+      - .env
+

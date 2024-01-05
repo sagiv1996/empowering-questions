@@ -22,7 +22,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (config: ConfigService) => ({
-        uri: config.get<string>('MONGODB_URI'),
+        uri: config.get<string>('MONGO_DB_URI'),
       }),
       inject: [ConfigService],
     }),
