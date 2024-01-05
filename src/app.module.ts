@@ -6,7 +6,6 @@ import { QuestionModule } from './question/question.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
-import { QuestionResolver } from './question/question.resolver';
 import { UserModule } from './user/user.module';
 import { NotificationModule } from './notification/notification.module';
 import { ScheduleModule } from '@nestjs/schedule';

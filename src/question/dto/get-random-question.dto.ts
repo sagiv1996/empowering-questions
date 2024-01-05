@@ -1,4 +1,3 @@
-import { Transform } from 'class-transformer';
 import {
   IsArray,
   IsEnum,
@@ -7,7 +6,7 @@ import {
   Max,
   Min,
 } from 'class-validator';
-import { Categories, } from 'src/schemas/question';
+import { Categories } from 'src/schemas/question';
 import { Genders } from 'src/schemas/user';
 
 export class GetRandomQuestion {

@@ -1,5 +1,4 @@
 import { IsArray, IsEnum, IsString } from 'class-validator';
-import { ObjectId } from 'mongoose';
 import { Categories } from 'src/schemas/question';
 import { Frequency, Genders } from 'src/schemas/user';
 
