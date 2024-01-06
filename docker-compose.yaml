@@ -8,4 +8,6 @@ services:
     command: npm run start:dev
     env_file:
       - .env
+    ports:
+      - "8080:3000" 
 
