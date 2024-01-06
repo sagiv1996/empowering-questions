@@ -65,19 +65,15 @@ export class QuestionService {
     const { size = 3, gender, categories } = getRandomQuestion;
     const randomQuestion = await this.questionModel.aggregate([
       {
-        $match: {
-          gender: gender,
-          category: { $in: categories },
-        },
-      },
-      {
         $addFields: {
           avgRanking: { $avg: '$ranking.rank' },
         },
       },
       {
         $match: {
-          avgRanking: { $gte: 3.5 },
+          gender: gender,
+          category: { $in: categories },
+          $or: [{ avgRanking: { $gte: 3.5 } }, { ranking: { $exists: false } }],
         },
       },
       { $sample: { size } },
