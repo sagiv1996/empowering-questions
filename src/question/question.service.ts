@@ -9,6 +9,7 @@ import { Cron } from '@nestjs/schedule';
 import { Genders } from 'src/schemas/user';
 import { ConfigService } from '@nestjs/config';
 import { fetchDataFromGemini } from './utils';
+import { retry } from 'ts-retry-promise';
 
 @Injectable()
 export class QuestionService {
@@ -34,18 +35,26 @@ export class QuestionService {
   }
 
   private async fetchAndInsert(category: Categories, gender: Genders) {
-    const dataFromGemini = await fetchDataFromGemini(
-      category,
-      gender,
-      this.geminiApiKey,
-    );
-    const createQuestion: CreateQuestion = {
-      category,
-      gender,
-      string: dataFromGemini,
-    };
+    await retry(
+      async () => {
+        const dataFromGemini = await fetchDataFromGemini(
+          category,
+          gender,
+          this.geminiApiKey,
+        );
+        const createQuestion: CreateQuestion = {
+          category,
+          gender,
+          string: dataFromGemini,
+        };
 
-    await this.createQuestion(createQuestion);
+        await this.createQuestion(createQuestion);
+      },
+      {
+        retries: 3,
+        logger: (msg: string) => `Error with msg`,
+      },
+    );
   }
 
   async createQuestion(createQuestion: CreateQuestion): Promise<Question> {
