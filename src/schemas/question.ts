@@ -3,9 +3,14 @@ import { HydratedDocument } from 'mongoose';
 import { Genders } from './user';
 
 export enum Categories {
-  'confidence' = 'confidence',
-  'sport' = 'sport',
+  'selfConfidence' = 'self confidence',
   'relationship' = 'relationship',
+  'positiveFeelings' = 'positive feelings',
+  'communication' = 'communication',
+  'spiritualQuestions' = 'spiritual Questions',
+  'career' = 'career',
+  'familyLife' = 'family life',
+  'universityStudies' = 'university studies',
 }
 
 export type QuestionDocument = HydratedDocument<Question>;
