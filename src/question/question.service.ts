@@ -20,7 +20,7 @@ export class QuestionService {
 
   private readonly geminiApiKey =
     this.configService.get<string>('GEMINI_API_KEY');
-  @Cron('*/15 * * * * *')
+  @Cron('0 0 6 * * *')
   async createQuestionFromAi() {
     const fetchAndInsertFunctions: Promise<void>[] = [];
     Object.values(Genders).forEach((gender) => {

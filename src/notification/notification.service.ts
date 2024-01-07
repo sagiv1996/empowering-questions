@@ -13,7 +13,7 @@ export class NotificationService {
   @Inject(QuestionService)
   private readonly questionService: QuestionService;
 
-  @Cron('*/5 * * * * *')
+  @Cron('0 0 7 * * *')
   async main() {
     const users = await this.userService.getAll();
 
