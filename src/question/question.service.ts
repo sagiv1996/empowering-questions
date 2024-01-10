@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateQuestion } from 'src/question/dto/create-question.dto';
 import { GetRandomQuestion } from 'src/question/dto/get-random-question.dto';
@@ -10,24 +10,30 @@ import { Genders } from 'src/schemas/user';
 import { ConfigService } from '@nestjs/config';
 import { fetchDataFromGemini } from './utils';
 import { retry } from 'ts-retry-promise';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
 @Injectable()
 export class QuestionService {
   constructor(
     @InjectModel(Question.name) private questionModel: Model<Question>,
     private readonly configService: ConfigService,
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
   ) {}
 
   private readonly geminiApiKey =
     this.configService.get<string>('GEMINI_API_KEY');
   @Cron('0 0 5 * * *')
   async createQuestionFromAi() {
+    this.logger.debug('Start cron job, createQuestionFromAi');
     const fetchAndInsertFunctions: Promise<void>[] = [];
     Object.values(Genders).forEach((gender) => {
       Object.values(Categories).forEach((category) => {
         fetchAndInsertFunctions.push(this.fetchAndInsert(category, gender));
       });
     });
+    this.logger.debug('start promise ');
+
     await Promise.allSettled(fetchAndInsertFunctions);
 
     const count = await this.questionModel.countDocuments();
@@ -52,7 +58,7 @@ export class QuestionService {
       },
       {
         retries: 3,
-        logger: (msg: string) => `Error with msg`,
+        logger: (msg: string) => this.logger.error(`error ${msg}`),
       },
     );
   }
@@ -63,14 +69,14 @@ export class QuestionService {
       await question.save();
       return question;
     } catch (error) {
-      console.error({ error });
-      throw 'Error creating question';
+      this.logger.error({ error });
     }
   }
 
   async findRandomQuestion(
     getRandomQuestion: GetRandomQuestion,
   ): Promise<Question[]> {
+    this.logger.debug('findRandomQuestion');
     const { size = 3, gender, categories } = getRandomQuestion;
     const randomQuestion = await this.questionModel.aggregate([
       {
@@ -87,10 +93,12 @@ export class QuestionService {
       },
       { $sample: { size } },
     ]);
+    this.logger.debug({ randomQuestion });
     return randomQuestion;
   }
 
   async rankQuestion(rankQuestion: RankQuestion): Promise<Question> {
+    this.logger.debug('rankQuestion');
     const { questionId, userId, rank } = rankQuestion;
 
     const question = await this.questionModel.findOneAndUpdate(
@@ -104,9 +112,11 @@ export class QuestionService {
       { new: true },
     );
     if (question) {
+      this.logger.debug('question');
       return question;
     }
 
+    this.logger.debug('create a new one');
     return this.questionModel.findByIdAndUpdate(
       questionId,
       {

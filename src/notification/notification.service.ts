@@ -1,20 +1,23 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { QuestionService } from 'src/question/question.service';
 import { Categories } from 'src/schemas/question';
 import { Genders, User } from 'src/schemas/user';
 import { UserService } from 'src/user/user.service';
+import { Logger } from 'winston';
 
 @Injectable()
 export class NotificationService {
-  @Inject(UserService)
-  private readonly userService: UserService;
-
-  @Inject(QuestionService)
-  private readonly questionService: QuestionService;
+  constructor(
+    @Inject(UserService) private readonly userService: UserService,
+    @Inject(QuestionService) private readonly questionService: QuestionService,
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+  ) {}
 
   @Cron('0 0 7 * * *')
   async main() {
+    this.logger.debug('Start main func in notification service');
     const users = await this.userService.getAll();
 
     const notificationsForUser = [];
@@ -37,6 +40,9 @@ export class NotificationService {
           date: timeForNotifications[index],
         });
       });
+
+    this.logger.debug('finish main func in notification service');
+
     }
   }
 

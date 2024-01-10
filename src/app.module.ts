@@ -9,9 +9,17 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { UserModule } from './user/user.module';
 import { NotificationModule } from './notification/notification.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { WinstonModule } from 'nest-winston';
+import { transports } from 'winston';
 
 @Module({
   imports: [
+    WinstonModule.forRoot({
+      transports: [
+        new transports.File({ filename: 'combined.log', }),
+        new transports.Console(),
+      ],
+    }),
     ScheduleModule.forRoot(),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
