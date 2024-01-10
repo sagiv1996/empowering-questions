@@ -16,7 +16,7 @@ import { transports } from 'winston';
   imports: [
     WinstonModule.forRoot({
       transports: [
-        new transports.File({ filename: 'combined.log', }),
+        new transports.File({ filename: 'combined.log', level: 'debug' }),
         new transports.Console(),
       ],
     }),
