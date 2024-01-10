@@ -25,14 +25,14 @@ export class QuestionService {
     this.configService.get<string>('GEMINI_API_KEY');
   @Cron('0 0 5 * * *')
   async createQuestionFromAi() {
-    this.logger.debug('Start cron job, createQuestionFromAi');
+    this.logger.debug('Start cron job, createQuestionFromAi', new Date());
     const fetchAndInsertFunctions: Promise<void>[] = [];
     Object.values(Genders).forEach((gender) => {
       Object.values(Categories).forEach((category) => {
         fetchAndInsertFunctions.push(this.fetchAndInsert(category, gender));
       });
     });
-    this.logger.debug('start promise ');
+    this.logger.debug('start promise ', new Date());
 
     await Promise.allSettled(fetchAndInsertFunctions);
 
@@ -58,7 +58,7 @@ export class QuestionService {
       },
       {
         retries: 3,
-        logger: (msg: string) => this.logger.error(`error ${msg}`),
+        logger: (msg: string) => this.logger.error(`error ${msg}`, new Date()),
       },
     );
   }
@@ -69,14 +69,14 @@ export class QuestionService {
       await question.save();
       return question;
     } catch (error) {
-      this.logger.error({ error });
+      this.logger.error({ error, date: new Date() });
     }
   }
 
   async findRandomQuestion(
     getRandomQuestion: GetRandomQuestion,
   ): Promise<Question[]> {
-    this.logger.debug('findRandomQuestion');
+    this.logger.debug('findRandomQuestion', new Date());
     const { size = 3, gender, categories } = getRandomQuestion;
     const randomQuestion = await this.questionModel.aggregate([
       {
@@ -93,12 +93,12 @@ export class QuestionService {
       },
       { $sample: { size } },
     ]);
-    this.logger.debug({ randomQuestion });
+    this.logger.debug({ randomQuestion, date: new Date() });
     return randomQuestion;
   }
 
   async rankQuestion(rankQuestion: RankQuestion): Promise<Question> {
-    this.logger.debug('rankQuestion');
+    this.logger.debug('rankQuestion', new Date());
     const { questionId, userId, rank } = rankQuestion;
 
     const question = await this.questionModel.findOneAndUpdate(
@@ -112,11 +112,11 @@ export class QuestionService {
       { new: true },
     );
     if (question) {
-      this.logger.debug('question');
+      this.logger.debug('question', new Date());
       return question;
     }
 
-    this.logger.debug('create a new one');
+    this.logger.debug('create a new one', new Date());
     return this.questionModel.findByIdAndUpdate(
       questionId,
       {

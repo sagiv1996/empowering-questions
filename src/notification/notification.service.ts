@@ -17,7 +17,7 @@ export class NotificationService {
 
   @Cron('0 0 7 * * *')
   async main() {
-    this.logger.debug('Start main func in notification service');
+    this.logger.debug('Start main func in notification service', new Date());
     const users = await this.userService.getAll();
 
     const notificationsForUser = [];
@@ -41,8 +41,7 @@ export class NotificationService {
         });
       });
 
-    this.logger.debug('finish main func in notification service');
-
+      this.logger.debug('finish main func in notification service', new Date());
     }
   }
 
