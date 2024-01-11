@@ -1,13 +1,13 @@
 FROM node:latest
-
-WORKDIR /app
-
+WORKDIR /usr/src/app
 COPY package*.json ./
-
-RUN yarn install
-
+RUN npm install
 COPY . .
+COPY .env .env ./
+RUN yarn build
 
-EXPOSE 3000
+# Expose the port on which the app will run
+EXPOSE 3001
 
-CMD "start:prod"
+# Start the server using the production build
+CMD ["yarn", "start:prod"]
