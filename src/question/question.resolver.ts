@@ -14,10 +14,10 @@ import { ObjectId } from 'mongoose';
 import { Genders } from 'src/schemas/user';
 
 registerEnumType(Categories, {
-  name: 'QuestionCategory',
+  name: 'Categories',
 });
 registerEnumType(Genders, {
-  name: 'QuestionGenders',
+  name: 'Genders',
 });
 
 @ObjectType()

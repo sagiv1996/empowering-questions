@@ -3,7 +3,6 @@ import {
   Field,
   Mutation,
   ObjectType,
-  Query,
   Resolver,
   registerEnumType,
 } from '@nestjs/graphql';
@@ -12,11 +11,15 @@ import { UserService } from './user.service';
 import { Categories } from 'src/schemas/question';
 
 registerEnumType(Frequency, {
-  name: 'FrequencyTypes',
+  name: 'Frequency',
 });
 
 registerEnumType(Genders, {
-  name: 'GenderTypes',
+  name: 'Genders',
+});
+
+registerEnumType(Categories, {
+  name: 'Categories',
 });
 
 @ObjectType()
@@ -30,8 +33,8 @@ export class UserType {
   @Field()
   gender: Genders;
 
-  @Field()
-  categories: [Categories];
+  @Field((type) => [Categories])
+  categories: Categories[];
 }
 
 @Resolver(() => UserType)
@@ -49,7 +52,6 @@ export class UserResolver {
     @Args('categories', { type: () => [Categories] })
     categories: Categories[],
   ) {
-    console.info({ categories });
     return this.userService.createUser({
       firebaseId,
       frequency,
