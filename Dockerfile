@@ -11,3 +11,4 @@ EXPOSE 3000
 
 # Start the server using the production build
 CMD ["yarn", "start:prod"]
+# docker run --rm -p 3001:3001 nestjs-app

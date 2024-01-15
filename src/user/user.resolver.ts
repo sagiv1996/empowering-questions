@@ -29,6 +29,9 @@ export class UserType {
 
   @Field()
   gender: Genders;
+
+  @Field()
+  categories: [Categories];
 }
 
 @Resolver(() => UserType)
