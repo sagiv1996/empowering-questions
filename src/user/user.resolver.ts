@@ -27,13 +27,13 @@ export class UserType {
   @Field()
   firebaseId: string;
 
-  @Field()
+  @Field(() => Frequency)
   frequency: Frequency;
 
-  @Field()
+  @Field(() => Genders)
   gender: Genders;
 
-  @Field((type) => [Categories])
+  @Field(() => [Categories])
   categories: Categories[];
 }
 

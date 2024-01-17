@@ -28,10 +28,10 @@ export class QuestionType {
   @Field()
   string: string;
 
-  @Field()
+  @Field(() => Categories)
   category: Categories;
 
-  @Field()
+  @Field(() => Genders)
   gender: Genders;
 }
 
