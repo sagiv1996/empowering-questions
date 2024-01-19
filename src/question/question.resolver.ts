@@ -7,6 +7,7 @@ import {
   Args,
   registerEnumType,
   ID,
+  Float,
 } from '@nestjs/graphql';
 import { QuestionService } from './question.service';
 import { Question } from 'src/schemas/question';
@@ -34,6 +35,9 @@ export class QuestionType {
 
   @Field(() => Genders)
   gender: Genders;
+
+  @Field(() => Float, { nullable: true })
+  avgRanking: number;
 }
 
 @Resolver(() => QuestionType)
