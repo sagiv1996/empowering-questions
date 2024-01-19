@@ -6,17 +6,20 @@ import { Model } from 'mongoose';
 import { Categories, Question } from 'src/schemas/question';
 import { RankQuestion } from './dto/rank-question.dto';
 import { Cron } from '@nestjs/schedule';
-import { Genders } from 'src/schemas/user';
+import { Genders, User } from 'src/schemas/user';
 import { ConfigService } from '@nestjs/config';
 import { fetchDataFromGemini } from './utils';
 import { retry } from 'ts-retry-promise';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { UserService } from 'src/user/user.service';
+import { GetUserById } from 'src/user/dto/get-user-by-id.dto';
 
 @Injectable()
 export class QuestionService {
   constructor(
     @InjectModel(Question.name) private questionModel: Model<Question>,
+    @Inject(UserService) private readonly userService: UserService,
     private readonly configService: ConfigService,
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
   ) {}
@@ -73,6 +76,16 @@ export class QuestionService {
     }
   }
 
+  async findRandomQuestionByUserId(
+    getUserById: GetUserById,
+  ): Promise<Question[]> {
+    const user = await this.userService.getUserById(getUserById);
+    const questions = await this.findRandomQuestion({
+      categories: user.categories,
+      gender: user.gender,
+    });
+    return questions;
+  }
   async findRandomQuestion(
     getRandomQuestion: GetRandomQuestion,
   ): Promise<Question[]> {

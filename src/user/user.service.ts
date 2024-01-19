@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from 'src/schemas/user';
 import { CreateUser } from './dto/create-user.dto';
+import { GetUserById } from './dto/get-user-by-id.dto';
 
 @Injectable()
 export class UserService {
@@ -20,6 +21,11 @@ export class UserService {
     } catch (e) {
       throw e;
     }
+  }
+
+  async getUserById(getUserById: GetUserById) {
+    const user = await this.userModel.findById(getUserById.userId).lean();
+    return user;
   }
 
   async getAll() {

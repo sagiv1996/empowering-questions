@@ -6,11 +6,13 @@ import {
   Mutation,
   Args,
   registerEnumType,
+  createUnionType,
+  Int,
 } from '@nestjs/graphql';
 import { QuestionService } from './question.service';
 import { Question } from 'src/schemas/question';
 import { Categories } from 'src/schemas/question';
-import { ObjectId } from 'mongoose';
+import { ObjectId, Types } from 'mongoose';
 import { Genders } from 'src/schemas/user';
 
 registerEnumType(Categories, {
@@ -23,7 +25,7 @@ registerEnumType(Genders, {
 @ObjectType()
 export class QuestionType {
   @Field()
-  id: string;
+  _id: string;
 
   @Field()
   string: string;
@@ -53,13 +55,11 @@ export class QuestionResolver {
   }
 
   @Query(() => [QuestionType])
-  findRandom(
-    @Args('category', { type: () => [Categories] }) categories: Categories[],
-    @Args('gender', { type: () => Genders }) gender: Genders,
+  findRandomQuestionsByUserId(
+    @Args('userId', { type: () => String }) userId: ObjectId,
   ): Promise<Question[]> {
-    return this.questionService.findRandomQuestion({
-      gender,
-      categories,
+    return this.questionService.findRandomQuestionByUserId({
+      userId,
     });
   }
 
