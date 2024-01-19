@@ -2,7 +2,7 @@ import { IsArray, IsEnum, IsString } from 'class-validator';
 import { Categories } from 'src/schemas/question';
 import { Frequency, Genders } from 'src/schemas/user';
 
-export class CreateUser {
+export class UpserteUser {
   @IsString()
   firebaseId: string;
 

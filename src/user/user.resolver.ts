@@ -52,7 +52,7 @@ export class UserResolver {
     @Args('categories', { type: () => [Categories] })
     categories: Categories[],
   ) {
-    return this.userService.createUser({
+    return this.userService.upsertUser({
       firebaseId,
       frequency,
       gender,
