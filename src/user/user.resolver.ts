@@ -47,7 +47,7 @@ export class UserResolver {
   constructor(private readonly userService: UserService) {}
 
   @Mutation(() => UserType)
-  createUser(
+  upsertUser(
     @Args('firebaseId')
     firebaseId: string,
     @Args('frequency', { type: () => Frequency })
