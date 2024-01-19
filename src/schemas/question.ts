@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import { HydratedDocument, ObjectId } from 'mongoose';
 import { Genders } from './user';
+import { Field, Float, ID, ObjectType } from '@nestjs/graphql';
 
 export enum Categories {
   'selfConfidence' = 'self confidence',
@@ -15,11 +16,17 @@ export enum Categories {
 
 export type QuestionDocument = HydratedDocument<Question>;
 
+@ObjectType()
 @Schema()
 export class Question {
+  @Field(() => ID!)
+  _id: ObjectId;
+
+  @Field()
   @Prop({ type: String, required: true, unique: true, index: true })
   string: string;
 
+  @Field(() => Categories)
   @Prop({
     type: String,
     required: true,
@@ -27,6 +34,7 @@ export class Question {
   })
   category: Categories;
 
+  @Field(() => Genders)
   @Prop({ type: String, required: true, enum: Genders })
   gender: Genders;
 
@@ -40,6 +48,9 @@ export class Question {
     default: undefined,
   })
   ranking: { userId: string; rank: number }[];
+
+  @Field(() => Float, { nullable: true })
+  avgRanking: number;
 }
 
 export const QuestionSchema = SchemaFactory.createForClass(Question);

@@ -1,63 +1,19 @@
 import {
   Resolver,
   Query,
-  ObjectType,
-  Field,
   Mutation,
   Args,
-  registerEnumType,
   ID,
-  Float,
 } from '@nestjs/graphql';
 import { QuestionService } from './question.service';
 import { Question } from 'src/schemas/question';
-import { Categories } from 'src/schemas/question';
 import { ObjectId, Types } from 'mongoose';
-import { Genders } from 'src/schemas/user';
 
-registerEnumType(Categories, {
-  name: 'Categories',
-});
-registerEnumType(Genders, {
-  name: 'Genders',
-});
-
-@ObjectType()
-export class QuestionType {
-  @Field()
-  _id: string;
-
-  @Field()
-  string: string;
-
-  @Field(() => Categories)
-  category: Categories;
-
-  @Field(() => Genders)
-  gender: Genders;
-
-  @Field(() => Float, { nullable: true })
-  avgRanking: number;
-}
-
-@Resolver(() => QuestionType)
+@Resolver(() => Question)
 export class QuestionResolver {
   constructor(private readonly questionService: QuestionService) {}
 
-  @Mutation(() => QuestionType)
-  createQuestion(
-    @Args('string') newString: string,
-    @Args('category', { type: () => Categories }) newCategory: Categories,
-    @Args('gender', { type: () => Genders }) newGender: Genders,
-  ): Promise<Question> {
-    return this.questionService.createQuestion({
-      string: newString,
-      category: newCategory,
-      gender: newGender,
-    });
-  }
-
-  @Query(() => [QuestionType])
+  @Query(() => [Question])
   findRandomQuestionsByUserId(
     @Args('userId', { type: () => ID! }) userId: ObjectId,
   ): Promise<Question[]> {
@@ -66,7 +22,7 @@ export class QuestionResolver {
     });
   }
 
-  @Mutation(() => QuestionType)
+  @Mutation(() => Question)
   async rankQuestion(
     @Args('questionId')
     questionId: string,

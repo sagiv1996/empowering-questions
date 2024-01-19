@@ -1,14 +1,12 @@
 import {
   Args,
-  Field,
   ID,
   Mutation,
-  ObjectType,
   Resolver,
   registerEnumType,
   Query,
 } from '@nestjs/graphql';
-import { Frequency, Genders } from 'src/schemas/user';
+import { Frequency, Genders, User } from 'src/schemas/user';
 import { UserService } from './user.service';
 import { Categories } from 'src/schemas/question';
 import { ObjectId } from 'mongoose';
@@ -25,29 +23,11 @@ registerEnumType(Categories, {
   name: 'Categories',
 });
 
-@ObjectType()
-export class UserType {
-  @Field(() => ID!)
-  _id: ObjectId;
-
-  @Field()
-  firebaseId: string;
-
-  @Field(() => Frequency)
-  frequency: Frequency;
-
-  @Field(() => Genders)
-  gender: Genders;
-
-  @Field(() => [Categories])
-  categories: Categories[];
-}
-
-@Resolver(() => UserType)
+@Resolver(() => User)
 export class UserResolver {
   constructor(private readonly userService: UserService) {}
 
-  @Mutation(() => UserType)
+  @Mutation(() => User)
   upsertUser(
     @Args('firebaseId')
     firebaseId: string,
@@ -66,7 +46,7 @@ export class UserResolver {
     });
   }
 
-  @Query(() => UserType)
+  @Query(() => User)
   getUserById(@Args('userId', { type: () => ID! }) userId: ObjectId) {
     return this.userService.getUserById({ userId });
   }
