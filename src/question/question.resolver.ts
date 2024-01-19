@@ -6,8 +6,7 @@ import {
   Mutation,
   Args,
   registerEnumType,
-  createUnionType,
-  Int,
+  ID,
 } from '@nestjs/graphql';
 import { QuestionService } from './question.service';
 import { Question } from 'src/schemas/question';
@@ -56,7 +55,7 @@ export class QuestionResolver {
 
   @Query(() => [QuestionType])
   findRandomQuestionsByUserId(
-    @Args('userId', { type: () => String }) userId: ObjectId,
+    @Args('userId', { type: () => ID! }) userId: ObjectId,
   ): Promise<Question[]> {
     return this.questionService.findRandomQuestionByUserId({
       userId,
