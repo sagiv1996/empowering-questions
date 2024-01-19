@@ -1,13 +1,7 @@
-import {
-  Resolver,
-  Query,
-  Mutation,
-  Args,
-  ID,
-} from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, ID, Float } from '@nestjs/graphql';
 import { QuestionService } from './question.service';
 import { Question } from 'src/schemas/question';
-import { ObjectId, Types } from 'mongoose';
+import { ObjectId } from 'mongoose';
 
 @Resolver(() => Question)
 export class QuestionResolver {
@@ -23,16 +17,16 @@ export class QuestionResolver {
   }
 
   @Mutation(() => Question)
-  async rankQuestion(
-    @Args('questionId')
-    questionId: string,
-    @Args('userId')
-    userId: string,
-    @Args('rank') rank: number,
+  rankQuestion(
+    @Args('questionId', { type: () => ID! })
+    questionId: ObjectId,
+    @Args('userId', { type: () => ID! })
+    userId: ObjectId,
+    @Args('rank', { type: () => Float }) rank: number,
   ): Promise<Question> {
     return this.questionService.rankQuestion({
-      questionId: questionId as unknown as ObjectId,
-      userId: userId as unknown as ObjectId,
+      questionId: questionId,
+      userId: userId,
       rank,
     });
   }
