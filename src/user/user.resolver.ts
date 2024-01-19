@@ -6,6 +6,7 @@ import {
   ObjectType,
   Resolver,
   registerEnumType,
+  Query,
 } from '@nestjs/graphql';
 import { Frequency, Genders } from 'src/schemas/user';
 import { UserService } from './user.service';
@@ -63,5 +64,10 @@ export class UserResolver {
       gender,
       categories,
     });
+  }
+
+  @Query(() => UserType)
+  getUserById(@Args('userId', { type: () => ID! }) userId: ObjectId) {
+    return this.userService.getUserById({ userId });
   }
 }
