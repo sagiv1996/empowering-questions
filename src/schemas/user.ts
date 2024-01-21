@@ -25,6 +25,9 @@ export class User {
   @Prop({ type: String, required: true, unique: true, index: true })
   firebaseId: String;
 
+  @Prop({ type: String, required: true, unique: true })
+  fcm: string;
+
   @Field(() => Frequency)
   @Prop({ type: String, enum: Frequency, required: true })
   frequency: Frequency;

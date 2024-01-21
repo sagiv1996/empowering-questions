@@ -20,6 +20,7 @@ export class UserService {
           frequency: upsertUser.frequency,
           gender: upsertUser.gender,
           categories: upsertUser.categories,
+          fcm: upsertUser.fcm,
         },
         { upsert: true, new: true },
       );
@@ -36,7 +37,7 @@ export class UserService {
   }
 
   async getAll() {
-    const users = await this.userModel.find();
+    const users = await this.userModel.find().lean();
     return users;
   }
 }

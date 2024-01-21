@@ -6,6 +6,9 @@ export class UpserteUser {
   @IsString()
   firebaseId: string;
 
+  @IsString()
+  fcm: string;
+
   @IsEnum(Frequency, { each: true })
   frequency: Frequency;
 

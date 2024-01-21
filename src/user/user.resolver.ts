@@ -31,6 +31,8 @@ export class UserResolver {
   upsertUser(
     @Args('firebaseId')
     firebaseId: string,
+    @Args('fcm')
+    fcm: string,
     @Args('frequency', { type: () => Frequency })
     frequency: Frequency,
     @Args('gender', { type: () => Genders })
@@ -40,6 +42,7 @@ export class UserResolver {
   ) {
     return this.userService.upsertUser({
       firebaseId,
+      fcm,
       frequency,
       gender,
       categories,
