@@ -25,7 +25,11 @@ import { transports } from 'winston';
       driver: ApolloDriver,
       autoSchemaFile: true,
     }),
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      cache: true,
+      envFilePath: ['.env', '.env.firebase'],
+    }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (config: ConfigService) => ({

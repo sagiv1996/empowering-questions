@@ -1,11 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Cron } from '@nestjs/schedule';
+import { Cron, SchedulerRegistry } from '@nestjs/schedule';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { QuestionService } from 'src/question/question.service';
-import { Categories } from 'src/schemas/question';
-import { Genders, User } from 'src/schemas/user';
+import { User } from 'src/schemas/user';
 import { UserService } from 'src/user/user.service';
 import { Logger } from 'winston';
+import * as admin from 'firebase-admin';
+import { ConfigService } from '@nestjs/config';
+import { CronJob } from 'cron';
 
 @Injectable()
 export class NotificationService {
@@ -13,14 +15,25 @@ export class NotificationService {
     @Inject(UserService) private readonly userService: UserService,
     @Inject(QuestionService) private readonly questionService: QuestionService,
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-  ) {}
+    @Inject(ConfigService) private readonly configService: ConfigService,
+    private readonly schedulerRegistry: SchedulerRegistry,
+  ) {
+    const projectId = configService.get<string>('project_id');
+    const privateKey = configService
+      .get<string>('private_key')
+      .replace(/\\n/g, '\n');
+    const clientEmail = configService.get<string>('client_email');
+
+    admin.initializeApp({
+      credential: admin.credential.cert({ projectId, privateKey, clientEmail }),
+      databaseURL: 'https://xxxxx.firebaseio.com',
+    });
+  }
 
   @Cron('0 0 7 * * *')
   async main() {
     this.logger.debug('Start main func in notification service', new Date());
     const users = await this.userService.getAll();
-
-    const notificationsForUser = [];
 
     for (const user of users) {
       const sumOfNotificationsPerDay = this.sumOfNotificationsPerDay(user);
@@ -35,9 +48,28 @@ export class NotificationService {
       });
 
       questionsForUser.forEach((value, index) => {
-        notificationsForUser.push({
-          string: value.string,
-          date: timeForNotifications[index],
+        timeForNotifications.forEach((timeForNotification) => {
+          const jobName = `__pushNotification_${
+            user._id
+          }_${timeForNotification.getTime()}}`;
+
+          const cronTime = new Date(
+            new Date().setHours(
+              timeForNotification.getHours(),
+              timeForNotification.getMinutes(),
+            ),
+          );
+          if (cronTime > new Date()) {
+            const job = new CronJob(cronTime, async () => {
+              await admin.messaging().send({
+                token: user.fcm,
+                notification: { title: 'title', body: value.string },
+              });
+              this.schedulerRegistry.deleteCronJob(jobName);
+            });
+            this.schedulerRegistry.addCronJob(jobName, job);
+            job.start();
+          }
         });
       });
 
