@@ -15,7 +15,7 @@ export class NotificationService {
     @Inject(UserService) private readonly userService: UserService,
     @Inject(QuestionService) private readonly questionService: QuestionService,
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    @Inject(ConfigService) private readonly configService: ConfigService,
+    @Inject(ConfigService) configService: ConfigService,
     private readonly schedulerRegistry: SchedulerRegistry,
   ) {
     const projectId = configService.get<string>('project_id');
@@ -35,7 +35,6 @@ export class NotificationService {
   })
   async main() {
     console.log('Notifications!');
-    // this.logger.debug('Start main func in notification service', new Date());
     const users = await this.userService.getAll();
 
     for (const user of users) {
