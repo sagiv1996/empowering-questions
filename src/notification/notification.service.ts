@@ -30,81 +30,93 @@ export class NotificationService {
     });
   }
 
-  @Cron('0 0 7 * * *')
+  @Cron('0 0 7 * * *', {
+    timeZone: 'Asia/Jerusalem',
+  })
   async main() {
-    this.logger.debug('Start main func in notification service', new Date());
+    console.log('Notifications!');
+    // this.logger.debug('Start main func in notification service', new Date());
     const users = await this.userService.getAll();
 
     for (const user of users) {
       const sumOfNotificationsPerDay = this.sumOfNotificationsPerDay(user);
-      const timeForNotifications = this.getRandomDate(
+      const timeForNotifications = this.getRandomDates(
         sumOfNotificationsPerDay,
         {},
       );
-
       const questionsForUser = await this.questionService.findRandomQuestion({
         categories: user.categories,
         gender: user.gender,
+        size: sumOfNotificationsPerDay,
       });
 
-      questionsForUser.forEach((value, index) => {
-        timeForNotifications.forEach((timeForNotification) => {
-          const jobName = `__pushNotification_${
-            user._id
-          }_${timeForNotification.getTime()}}`;
+      for (const [index, questionForUser] of questionsForUser.entries()) {
+        const cronTime: Date = new Date(
+          new Date().setHours(
+            timeForNotifications[index].getHours(),
+            timeForNotifications[index].getMinutes(),
+          ),
+        );
+        if (cronTime <= new Date()) continue;
 
-          const cronTime = new Date(
-            new Date().setHours(
-              timeForNotification.getHours(),
-              timeForNotification.getMinutes(),
-            ),
-          );
-          if (cronTime > new Date()) {
-            const job = new CronJob(cronTime, async () => {
-              await admin.messaging().send({
-                token: user.fcm,
-                notification: { title: 'title', body: value.string },
-              });
-              this.schedulerRegistry.deleteCronJob(jobName);
+        const jobName = `notification_${user._id}_${index}_${cronTime}}`;
+        const job = new CronJob(
+          cronTime,
+          async () => {
+            await admin.messaging().send({
+              token: user.fcm,
+              notification: {
+                title: 'title',
+                body: questionForUser.string,
+              },
             });
-            this.schedulerRegistry.addCronJob(jobName, job);
-            job.start();
-          }
-        });
-      });
+
+            this.logger.debug(
+              'Finish main func in notification service',
+              new Date(),
+            );
+            this.schedulerRegistry.deleteCronJob(jobName);
+          },
+          null,
+          true,
+          'Asia/Jerusalem',
+        );
+        this.schedulerRegistry.addCronJob(jobName, job);
+      }
 
       this.logger.debug('finish main func in notification service', new Date());
     }
   }
 
   sumOfNotificationsPerDay(user: User): number {
-    const frequencyObject = { little: 1, normal: 5, extra: 6 };
-    const randomNumberFrom0To3 = Math.floor(
-      Math.random() * 3 + frequencyObject[user.frequency],
-    );
-    const minNotificationPerFrequency = frequencyObject[user.frequency];
+    const frequencyWeights = { little: 1, normal: 5, extra: 6 };
+    const minNotifications = frequencyWeights[user.frequency];
+    const randomOffset = Math.floor(Math.random() * 3);
 
-    return minNotificationPerFrequency + randomNumberFrom0To3;
+    return minNotifications + randomOffset;
   }
 
-  getRandomDate(
-    sumOfNotification: number,
+  getRandomDates(
+    sumOfNotifications: number,
     { from = 8, to = 21 }: { from?: number; to?: number },
-  ) {
+  ): Date[] {
+    const getRandomHour = () =>
+      Math.floor(Math.random() * (to - from + 1)) + from;
     const randomHours = new Set<number>();
-    do {
-      const randomHour = Math.floor(Math.random() * (to - from + 1)) + from;
-      randomHours.add(randomHour);
-    } while (randomHours.size <= sumOfNotification);
+
+    while (randomHours.size < sumOfNotifications) {
+      randomHours.add(getRandomHour());
+    }
 
     const randomTimes: Date[] = [];
 
     randomHours.forEach((randomHour) => {
-      const randomMinute = Math.floor(Math.random() * (60 + 1));
-
-      const date = new Date(new Date().setHours(randomHour, randomMinute));
+      const randomMinute = Math.floor(Math.random() * 60);
+      const date = new Date();
+      date.setHours(randomHour, randomMinute, 0, 0); // Reset seconds and milliseconds
       randomTimes.push(date);
     });
-    return randomTimes.sort();
+
+    return randomTimes.sort((a, b) => a.getTime() - b.getTime());
   }
 }
