@@ -8,12 +8,16 @@ import { RankQuestion } from './dto/rank-question.dto';
 import { Cron } from '@nestjs/schedule';
 import { Genders, User } from 'src/schemas/user';
 import { ConfigService } from '@nestjs/config';
-import { fetchDataFromGemini } from './utils';
 import { retry } from 'ts-retry-promise';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { UserService } from 'src/user/user.service';
 import { GetUserById } from 'src/user/dto/get-user-by-id.dto';
+import {
+  GoogleGenerativeAI,
+  HarmBlockThreshold,
+  HarmCategory,
+} from '@google/generative-ai';
 
 @Injectable()
 export class QuestionService {
@@ -26,44 +30,76 @@ export class QuestionService {
 
   private readonly geminiApiKey =
     this.configService.get<string>('GEMINI_API_KEY');
+
+  private readonly genAI = new GoogleGenerativeAI(this.geminiApiKey);
+  private readonly model = this.genAI.getGenerativeModel({
+    model: 'gemini-pro',
+  });
+
+  private readonly generationConfig = {
+    temperature: 0.9,
+    topK: 1,
+    topP: 1,
+    maxOutputTokens: 2048,
+  };
+
+  private readonly safetySettings = [
+    {
+      category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+      threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+    },
+    {
+      category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+      threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+    },
+    {
+      category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+      threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+    },
+    {
+      category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+      threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+    },
+  ];
+
   @Cron('0 0 5 * * *')
   async createQuestionFromAi() {
-    this.logger.debug('Start cron job, createQuestionFromAi', new Date());
-    const fetchAndInsertFunctions: Promise<void>[] = [];
-    Object.values(Genders).forEach((gender) => {
-      Object.values(Categories).forEach((category) => {
-        fetchAndInsertFunctions.push(this.fetchAndInsert(category, gender));
-      });
-    });
-    this.logger.debug('start promise ', new Date());
+    const promiseArray: Promise<void>[] = [];
+    for (const category in Categories) {
+      for (const gender in Genders) {
+        const promise = retry(
+          async () => {
+            const text = `Create an empowering question for me that deals with ${category} for ${gender}, the sentence should be a maximum of 30 characters, and translated into Hebrew. It is important that the result be only the sentence in Hebrew.`;
+            const result = await this.model.generateContent({
+              contents: [
+                {
+                  role: 'user',
+                  parts: [
+                    {
+                      text,
+                    },
+                  ],
+                },
+              ],
+              generationConfig: this.generationConfig,
+              safetySettings: this.safetySettings,
+            });
 
-    await Promise.allSettled(fetchAndInsertFunctions);
-
-    const count = await this.questionModel.countDocuments();
-    console.log({ count });
-  }
-
-  private async fetchAndInsert(category: Categories, gender: Genders) {
-    await retry(
-      async () => {
-        const dataFromGemini = await fetchDataFromGemini(
-          category,
-          gender,
-          this.geminiApiKey,
+            const question = new this.questionModel({
+              gender,
+              category,
+              string: result.response.text(),
+            });
+            await question.save();
+          },
+          {
+            retries: 3,
+          },
         );
-        const createQuestion: CreateQuestion = {
-          category,
-          gender,
-          string: dataFromGemini,
-        };
-
-        await this.createQuestion(createQuestion);
-      },
-      {
-        retries: 3,
-        logger: (msg: string) => this.logger.error(`error ${msg}`, new Date()),
-      },
-    );
+        promiseArray.push(promise);
+      }
+    }
+    await Promise.allSettled(promiseArray);
   }
 
   async createQuestion(createQuestion: CreateQuestion): Promise<Question> {
@@ -86,6 +122,7 @@ export class QuestionService {
     });
     return questions;
   }
+
   async findRandomQuestion(
     getRandomQuestion: GetRandomQuestion,
   ): Promise<Question[]> {
