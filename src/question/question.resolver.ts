@@ -22,7 +22,7 @@ export class QuestionResolver {
     questionId: ObjectId,
     @Args('userId', { type: () => ID! })
     userId: ObjectId,
-    @Args('rank', { type: () => Float }) rank: number,
+    @Args('rank', { type: () => Float! }) rank: number,
   ): Promise<Question> {
     return this.questionService.rankQuestion({
       questionId: questionId,
