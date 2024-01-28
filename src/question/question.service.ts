@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateQuestion } from 'src/question/dto/create-question.dto';
 import { GetRandomQuestion } from 'src/question/dto/get-random-question.dto';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Categories, Question } from 'src/schemas/question';
 import { RankQuestion } from './dto/rank-question.dto';
 import { Cron } from '@nestjs/schedule';
@@ -18,6 +18,7 @@ import {
   HarmBlockThreshold,
   HarmCategory,
 } from '@google/generative-ai';
+import { GetRandomQuestionByUserId } from './dto/get-random-question-by-user-id.dto';
 
 @Injectable()
 export class QuestionService {
@@ -113,12 +114,13 @@ export class QuestionService {
   }
 
   async findRandomQuestionByUserId(
-    getUserById: GetUserById,
+    getRandomQuestionByUserId: GetRandomQuestionByUserId,
   ): Promise<Question[]> {
-    const user = await this.userService.getUserById(getUserById);
+    const user = await this.userService.getUserById(getRandomQuestionByUserId);
     const questions = await this.findRandomQuestion({
       categories: user.categories,
       gender: user.gender,
+      excludeIds: getRandomQuestionByUserId.excludeIds,
     });
     return questions;
   }
@@ -127,7 +129,7 @@ export class QuestionService {
     getRandomQuestion: GetRandomQuestion,
   ): Promise<Question[]> {
     this.logger.debug('findRandomQuestion', new Date());
-    const { size = 3, gender, categories } = getRandomQuestion;
+    const { size = 3, gender, categories, excludeIds = [] } = getRandomQuestion;
     const randomQuestion = await this.questionModel.aggregate([
       {
         $addFields: {
@@ -136,6 +138,7 @@ export class QuestionService {
       },
       {
         $match: {
+          _id: { $nin: excludeIds.map((id) => new Types.ObjectId(id)) },
           gender: gender,
           category: { $in: categories },
           $or: [{ avgRanking: { $gte: 3.5 } }, { ranking: { $exists: false } }],

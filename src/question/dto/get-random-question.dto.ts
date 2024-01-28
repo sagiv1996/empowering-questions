@@ -1,11 +1,13 @@
 import {
   IsArray,
   IsEnum,
+  IsMongoId,
   IsNumber,
   IsOptional,
   Max,
   Min,
 } from 'class-validator';
+import { Types } from 'mongoose';
 import { Categories } from 'src/schemas/question';
 import { Genders } from 'src/schemas/user';
 
@@ -23,4 +25,9 @@ export class GetRandomQuestion {
   @Max(10)
   @IsOptional()
   size?: number = 1;
+
+  @IsOptional()
+  @IsArray()
+  @IsMongoId({ each: true })
+  excludeIds?: Types.ObjectId[];
 }
