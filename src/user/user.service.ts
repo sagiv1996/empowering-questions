@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import { User } from 'src/schemas/user';
 import { UpserteUser as UpsertUser } from './dto/upsert-user.dto';
 import { GetUserById } from './dto/get-user-by-id.dto';
+import { GetUsersByIds } from './dto/get-users-by-ids.dto';
 
 @Injectable()
 export class UserService {
@@ -36,8 +37,13 @@ export class UserService {
     return user;
   }
 
-  async getAll() {
-    const users = await this.userModel.find().lean();
+  async getAll(filters?: GetUsersByIds) {
+    const usersIds = filters?.usersIds;
+    const query: Record<string, any> = {};
+    if (usersIds) {
+      query._id = { $in: usersIds };
+    }
+    const users = await this.userModel.find(query).lean();
     return users;
   }
 }

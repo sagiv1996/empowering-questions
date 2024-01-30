@@ -8,6 +8,7 @@ import { Logger } from 'winston';
 import * as admin from 'firebase-admin';
 import { ConfigService } from '@nestjs/config';
 import { CronJob } from 'cron';
+import { GetUsersByIds } from 'src/user/dto/get-users-by-ids.dto';
 
 @Injectable()
 export class NotificationService {
@@ -33,9 +34,9 @@ export class NotificationService {
   @Cron('0 0 7 * * *', {
     timeZone: 'Asia/Jerusalem',
   })
-  async triggerNotifications() {
+  async triggerNotifications(getUsersByIds?: GetUsersByIds) {
     console.log('Notifications!');
-    const users = await this.userService.getAll();
+    const users = await this.userService.getAll(getUsersByIds);
 
     for (const user of users) {
       const sumOfNotificationsPerDay = this.sumOfNotificationsPerDay(user);
