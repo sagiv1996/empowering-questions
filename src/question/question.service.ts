@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateQuestion } from 'src/question/dto/create-question.dto';
 import { GetRandomQuestion } from 'src/question/dto/get-random-question.dto';
-import { Model, Types } from 'mongoose';
+import { Model, ObjectId, Types } from 'mongoose';
 import { Categories, Question } from 'src/schemas/question';
 import { RankQuestion } from './dto/rank-question.dto';
 import { Cron } from '@nestjs/schedule';
@@ -12,7 +12,6 @@ import { retry } from 'ts-retry-promise';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { UserService } from 'src/user/user.service';
-import { GetUserById } from 'src/user/dto/get-user-by-id.dto';
 import {
   GoogleGenerativeAI,
   HarmBlockThreshold,
@@ -148,6 +147,22 @@ export class QuestionService {
     ]);
     this.logger.debug({ randomQuestion, date: new Date() });
     return randomQuestion;
+  }
+
+  async questionId(questionId: ObjectId) {
+    const [randomQuestion] = await this.questionModel.aggregate([
+      {
+        $match: {
+          _id: questionId,
+        },
+      },
+      {
+        $addFields: {
+          avgRanking: { $avg: '$ranking.rank' },
+        },
+      },
+    ]);
+    return randomQuestion.avgRanking;
   }
 
   async rankQuestion(rankQuestion: RankQuestion): Promise<Question> {

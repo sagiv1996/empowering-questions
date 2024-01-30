@@ -1,4 +1,13 @@
-import { Resolver, Query, Mutation, Args, ID, Float } from '@nestjs/graphql';
+import {
+  Resolver,
+  Query,
+  Mutation,
+  Args,
+  ID,
+  Float,
+  ResolveField,
+  Parent,
+} from '@nestjs/graphql';
 import { QuestionService } from './question.service';
 import { Question } from 'src/schemas/question';
 import { ObjectId, Types } from 'mongoose';
@@ -32,5 +41,10 @@ export class QuestionResolver {
       userId: userId,
       rank,
     });
+  }
+
+  @ResolveField('avgRanking', () => Float, { nullable: true })
+  async posts(@Parent() question: Question) {
+    return question.avgRanking ?? this.questionService.questionId(question._id);
   }
 }
