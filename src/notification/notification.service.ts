@@ -33,7 +33,7 @@ export class NotificationService {
   @Cron('0 0 7 * * *', {
     timeZone: 'Asia/Jerusalem',
   })
-  async main() {
+  async triggerNotifications() {
     console.log('Notifications!');
     const users = await this.userService.getAll();
 
