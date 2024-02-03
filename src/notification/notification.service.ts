@@ -35,7 +35,7 @@ export class NotificationService {
     timeZone: 'Asia/Jerusalem',
   })
   async triggerNotifications(getUsersByIds?: GetUsersByIds) {
-    console.log('Notifications!');
+    this.logger.debug('Start triggerNotifications');
     const users = await this.userService.getAll(getUsersByIds);
 
     for (const user of users) {
@@ -44,6 +44,7 @@ export class NotificationService {
         sumOfNotificationsPerDay,
         {},
       );
+
       const questionsForUser = await this.questionService.findRandomQuestion({
         categories: user.categories,
         gender: user.gender,
@@ -60,22 +61,34 @@ export class NotificationService {
         if (cronTime <= new Date()) continue;
 
         const jobName = `notification_${user._id}_${index}_${cronTime}}`;
+
+        this.logger.debug({ user: user._id, time: cronTime, jobName });
         const job = new CronJob(
           cronTime,
           async () => {
-            await admin.messaging().send({
-              token: user.fcm,
-              notification: {
-                title: 'title',
-                body: questionForUser.string,
-              },
-            });
+            try {
+              this.logger.debug('trying to send a push message', {
+                user: user._id,
+                fcm: user.fcm,
+                time: cronTime,
+              });
+              await admin.messaging().send({
+                token: user.fcm,
+                notification: {
+                  title: 'title',
+                  body: questionForUser.string,
+                },
+              });
 
-            this.logger.debug(
-              'Finish main func in notification service',
-              new Date(),
-            );
-            this.schedulerRegistry.deleteCronJob(jobName);
+              this.schedulerRegistry.deleteCronJob(jobName);
+              this.logger.debug('Delete logger');
+            } catch (e) {
+              this.logger.error({
+                message: 'error with send notification',
+                error: e,
+                user: user._id,
+              });
+            }
           },
           null,
           true,
@@ -84,7 +97,7 @@ export class NotificationService {
         this.schedulerRegistry.addCronJob(jobName, job);
       }
 
-      this.logger.debug('finish main func in notification service', new Date());
+      this.logger.debug('triggerNotifications finish to running', new Date());
     }
   }
 
