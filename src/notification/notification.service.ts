@@ -75,8 +75,8 @@ export class NotificationService {
               await admin.messaging().send({
                 token: user.fcm,
                 notification: {
-                  title: 'title',
-                  body: questionForUser.string,
+                  title: questionForUser.string,
+                  body: 'tap here to get more questions.',
                 },
               });
 
