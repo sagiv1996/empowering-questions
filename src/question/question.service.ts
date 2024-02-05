@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateQuestion } from 'src/question/dto/create-question.dto';
 import { GetRandomQuestion } from 'src/question/dto/get-random-question.dto';
@@ -23,7 +23,8 @@ import { GetRandomQuestionByUserId } from './dto/get-random-question-by-user-id.
 export class QuestionService {
   constructor(
     @InjectModel(Question.name) private questionModel: Model<Question>,
-    @Inject(UserService) private readonly userService: UserService,
+    @Inject(forwardRef(() => UserService))
+    private readonly userService: UserService,
     private readonly configService: ConfigService,
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
   ) {}

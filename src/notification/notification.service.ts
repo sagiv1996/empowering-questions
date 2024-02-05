@@ -1,20 +1,15 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Cron, SchedulerRegistry } from '@nestjs/schedule';
+import { SchedulerRegistry } from '@nestjs/schedule';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { QuestionService } from 'src/question/question.service';
-import { User } from 'src/schemas/user';
-import { UserService } from 'src/user/user.service';
 import { Logger } from 'winston';
 import * as admin from 'firebase-admin';
 import { ConfigService } from '@nestjs/config';
 import { CronJob } from 'cron';
-import { GetUsersByIds } from 'src/user/dto/get-users-by-ids.dto';
+import { TriggerNotifications } from './dto/trigger-notifications.dto';
 
 @Injectable()
 export class NotificationService {
   constructor(
-    @Inject(UserService) private readonly userService: UserService,
-    @Inject(QuestionService) private readonly questionService: QuestionService,
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     @Inject(ConfigService) configService: ConfigService,
     private readonly schedulerRegistry: SchedulerRegistry,
@@ -31,82 +26,58 @@ export class NotificationService {
     });
   }
 
-  @Cron('0 0 7 * * *', {
-    timeZone: 'Asia/Jerusalem',
-  })
-  async triggerNotifications(getUsersByIds?: GetUsersByIds) {
-    this.logger.debug('Start triggerNotifications');
-    const users = await this.userService.getAll(getUsersByIds);
+  async triggerNotifications(triggerNotifications: TriggerNotifications) {
+    const { fcm, questionsString } = triggerNotifications;
 
-    for (const user of users) {
-      const sumOfNotificationsPerDay = this.sumOfNotificationsPerDay(user);
-      const timeForNotifications = this.getRandomDates(
-        sumOfNotificationsPerDay,
-        {},
+    const timeForNotifications = this.getRandomDates(questionsString.length, {
+      from: 8,
+      to: 22,
+    });
+    for (const [index, questionForUser] of questionsString.entries()) {
+      const cronTime: Date = new Date(
+        new Date().setHours(
+          timeForNotifications[index].getHours(),
+          timeForNotifications[index].getMinutes(),
+        ),
       );
 
-      const questionsForUser = await this.questionService.findRandomQuestion({
-        categories: user.categories,
-        gender: user.gender,
-        size: sumOfNotificationsPerDay,
-      });
+      if (cronTime <= new Date()) continue;
 
-      for (const [index, questionForUser] of questionsForUser.entries()) {
-        const cronTime: Date = new Date(
-          new Date().setHours(
-            timeForNotifications[index].getHours(),
-            timeForNotifications[index].getMinutes(),
-          ),
-        );
-        if (cronTime <= new Date()) continue;
+      const jobName = `notification_${fcm}_${index}_${cronTime}}`;
 
-        const jobName = `notification_${user._id}_${index}_${cronTime}}`;
+      this.logger.debug({ fcm, time: cronTime, jobName });
+      const job = new CronJob(
+        cronTime,
+        async () => {
+          try {
+            this.logger.debug('trying to send a push message', {
+              fcm: fcm,
+              time: cronTime,
+            });
+            await admin.messaging().send({
+              token: fcm,
+              notification: {
+                title: questionForUser,
+                body: 'tap here to get more questions.',
+              },
+            });
 
-        this.logger.debug({ user: user._id, time: cronTime, jobName });
-        const job = new CronJob(
-          cronTime,
-          async () => {
-            try {
-              this.logger.debug('trying to send a push message', {
-                user: user._id,
-                fcm: user.fcm,
-                time: cronTime,
-              });
-              await admin.messaging().send({
-                token: user.fcm,
-                notification: {
-                  title: questionForUser.string,
-                  body: 'tap here to get more questions.',
-                },
-              });
-
-              this.schedulerRegistry.deleteCronJob(jobName);
-              this.logger.debug('Delete logger');
-            } catch (e) {
-              this.logger.error({
-                message: 'error with send notification',
-                error: e,
-                user: user._id,
-              });
-            }
-          },
-          null,
-          true,
-          'Asia/Jerusalem',
-        );
-        this.schedulerRegistry.addCronJob(jobName, job);
-      }
-
-      this.logger.debug('triggerNotifications finish to running', new Date());
+            this.schedulerRegistry.deleteCronJob(jobName);
+            this.logger.debug('Delete logger');
+          } catch (e) {
+            this.logger.error({
+              message: 'error with send notification',
+              error: e,
+              fcm,
+            });
+          }
+        },
+        null,
+        true,
+        'Asia/Jerusalem',
+      );
+      this.schedulerRegistry.addCronJob(jobName, job);
     }
-  }
-
-  sumOfNotificationsPerDay(user: User): number {
-    const frequencyWeights = { little: 1, normal: 5, extra: 6 };
-    const minNotifications = frequencyWeights[user.frequency];
-    const randomOffset = Math.floor(Math.random() * 3);
-
-    return minNotifications + randomOffset;
   }
 
   getRandomDates(
@@ -126,7 +97,7 @@ export class NotificationService {
     randomHours.forEach((randomHour) => {
       const randomMinute = Math.floor(Math.random() * 60);
       const date = new Date();
-      date.setHours(randomHour, randomMinute, 0, 0); // Reset seconds and milliseconds
+      date.setHours(randomHour, randomMinute, 0, 0);
       randomTimes.push(date);
     });
 

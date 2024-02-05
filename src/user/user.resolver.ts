@@ -9,7 +9,7 @@ import {
 import { Frequency, Genders, User } from 'src/schemas/user';
 import { UserService } from './user.service';
 import { Categories } from 'src/schemas/question';
-import { ObjectId } from 'mongoose';
+import { ObjectId, Types } from 'mongoose';
 
 registerEnumType(Frequency, {
   name: 'Frequency',
@@ -52,5 +52,13 @@ export class UserResolver {
   @Query(() => User)
   getUserById(@Args('userId', { type: () => ID! }) userId: ObjectId) {
     return this.userService.getUserById({ userId });
+  }
+
+  @Mutation(() => User, { nullable: true })
+  createSendPushNotificationsForUsers(
+    @Args('usersIds', { type: () => [ID], nullable: true })
+    usersIds?: Types.ObjectId[],
+  ) {
+    return this.userService.createSendPushNotificationsForUsers({ usersIds });
   }
 }
