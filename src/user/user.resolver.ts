@@ -50,7 +50,9 @@ export class UserResolver {
   }
 
   @Query(() => User)
-  findUserById(@Args('userId', { type: () => ID! }) userId: ObjectId) {
+  findUserById(
+    @Args('userId', { type: () => ID!, nullable: true }) userId: ObjectId,
+  ) {
     return this.userService.findUserById({ userId });
   }
 
