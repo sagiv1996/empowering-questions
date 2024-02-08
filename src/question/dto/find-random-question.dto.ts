@@ -11,7 +11,7 @@ import { Types } from 'mongoose';
 import { Categories } from 'src/schemas/question';
 import { Genders } from 'src/schemas/user';
 
-export class GetRandomQuestion {
+export class FindRandomQuestion {
   @IsArray()
   @IsEnum(Genders, { each: true })
   gender: Genders;

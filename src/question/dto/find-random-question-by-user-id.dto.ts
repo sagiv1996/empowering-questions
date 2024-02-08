@@ -1,7 +1,7 @@
 import { IsArray, IsMongoId, IsOptional } from 'class-validator';
 import { ObjectId, Types } from 'mongoose';
 
-export class GetRandomQuestionByUserId {
+export class FindRandomQuestionByUserId {
   @IsMongoId()
   userId: ObjectId;
 

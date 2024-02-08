@@ -3,8 +3,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from 'src/schemas/user';
 import { UpserteUser as UpsertUser } from './dto/upsert-user.dto';
-import { GetUserById } from './dto/get-user-by-id.dto';
-import { GetUsersByIds } from './dto/get-users-by-ids.dto';
+import { FindUserById } from './dto/find-user-by-id.dto';
+import { FindUsersByIds } from './dto/find-users-by-ids.dto';
 import { QuestionService } from 'src/question/question.service';
 import { NotificationService } from 'src/notification/notification.service';
 import { Cron } from '@nestjs/schedule';
@@ -46,28 +46,18 @@ export class UserService {
     }
   }
 
-  async getUserById(getUserById: GetUserById) {
-    const user = await this.userModel.findById(getUserById.userId).lean();
+  async findUserById(findUserById: FindUserById) {
+    const user = await this.userModel.findById(findUserById.userId).lean();
     return user;
   }
 
-  async getAll(filters?: GetUsersByIds) {
-    const usersIds = filters?.usersIds;
-    const query: Record<string, any> = {};
-    if (usersIds) {
-      query._id = { $in: usersIds };
-    }
-    const users = await this.userModel.find(query).lean();
-    return users;
-  }
-
   @Cron('0 0 7 * * *')
-  async createSendPushNotificationsForUsers(getUsersByIds?: GetUsersByIds) {
+  async createSendPushNotificationsForUsers(findUsersByIds?: FindUsersByIds) {
     this.logger.debug('createSendPushNotificationsForUsers running');
     let users: [User];
-    if (getUsersByIds?.usersIds) {
+    if (findUsersByIds?.usersIds) {
       users = await this.userModel
-        .find({ _id: { $in: getUsersByIds.usersIds } })
+        .find({ _id: { $in: findUsersByIds.usersIds } })
         .lean();
     } else {
       users = await this.userModel.find().lean();

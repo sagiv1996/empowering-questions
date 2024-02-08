@@ -1,12 +1,12 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateQuestion } from 'src/question/dto/create-question.dto';
-import { GetRandomQuestion } from 'src/question/dto/get-random-question.dto';
+import { FindRandomQuestion } from 'src/question/dto/find-random-question.dto';
 import { Model, ObjectId, Types } from 'mongoose';
 import { Categories, Question } from 'src/schemas/question';
 import { RankQuestion } from './dto/rank-question.dto';
 import { Cron } from '@nestjs/schedule';
-import { Genders, User } from 'src/schemas/user';
+import { Genders } from 'src/schemas/user';
 import { ConfigService } from '@nestjs/config';
 import { retry } from 'ts-retry-promise';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -17,7 +17,7 @@ import {
   HarmBlockThreshold,
   HarmCategory,
 } from '@google/generative-ai';
-import { GetRandomQuestionByUserId } from './dto/get-random-question-by-user-id.dto';
+import { FindRandomQuestionByUserId } from './dto/find-random-question-by-user-id.dto';
 
 @Injectable()
 export class QuestionService {
@@ -114,22 +114,29 @@ export class QuestionService {
   }
 
   async findRandomQuestionByUserId(
-    getRandomQuestionByUserId: GetRandomQuestionByUserId,
+    findRandomQuestionByUserId: FindRandomQuestionByUserId,
   ): Promise<Question[]> {
-    const user = await this.userService.getUserById(getRandomQuestionByUserId);
+    const user = await this.userService.findUserById(
+      findRandomQuestionByUserId,
+    );
     const questions = await this.findRandomQuestion({
       categories: user.categories,
       gender: user.gender,
-      excludeIds: getRandomQuestionByUserId.excludeIds,
+      excludeIds: findRandomQuestionByUserId.excludeIds,
     });
     return questions;
   }
 
   async findRandomQuestion(
-    getRandomQuestion: GetRandomQuestion,
+    findRandomQuestion: FindRandomQuestion,
   ): Promise<Question[]> {
     this.logger.debug('findRandomQuestion', new Date());
-    const { size = 3, gender, categories, excludeIds = [] } = getRandomQuestion;
+    const {
+      size = 3,
+      gender,
+      categories,
+      excludeIds = [],
+    } = findRandomQuestion;
     const randomQuestion = await this.questionModel.aggregate([
       {
         $addFields: {

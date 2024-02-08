@@ -1,7 +1,7 @@
 import { IsMongoId } from 'class-validator';
 import { ObjectId } from 'mongoose';
 
-export class GetUserById {
+export class FindUserById {
   @IsMongoId()
   userId: ObjectId;
 }

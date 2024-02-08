@@ -50,8 +50,8 @@ export class UserResolver {
   }
 
   @Query(() => User)
-  getUserById(@Args('userId', { type: () => ID! }) userId: ObjectId) {
-    return this.userService.getUserById({ userId });
+  findUserById(@Args('userId', { type: () => ID! }) userId: ObjectId) {
+    return this.userService.findUserById({ userId });
   }
 
   @Mutation(() => User, { nullable: true })
