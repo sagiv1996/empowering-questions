@@ -37,20 +37,6 @@ export class Question {
   @Field(() => Genders)
   @Prop({ type: String, required: true, enum: Genders })
   gender: Genders;
-
-  @Prop({
-    type: [
-      {
-        userId: { type: String, required: true, ref: 'User' },
-        rank: { type: Number, required: true, min: 1, max: 5 },
-      },
-    ],
-    default: undefined,
-  })
-  ranking: { userId: string; rank: number }[];
-
-  @Field(() => Float, { nullable: true })
-  avgRanking: number;
 }
 
 export const QuestionSchema = SchemaFactory.createForClass(Question);

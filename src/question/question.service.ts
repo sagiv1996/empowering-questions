@@ -2,9 +2,8 @@ import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateQuestion } from 'src/question/dto/create-question.dto';
 import { FindRandomQuestion } from 'src/question/dto/find-random-question.dto';
-import { Model, ObjectId, Types } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Categories, Question } from 'src/schemas/question';
-import { RankQuestion } from './dto/rank-question.dto';
 import { Cron } from '@nestjs/schedule';
 import { Genders } from 'src/schemas/user';
 import { ConfigService } from '@nestjs/config';
@@ -139,71 +138,15 @@ export class QuestionService {
     } = findRandomQuestion;
     const randomQuestion = await this.questionModel.aggregate([
       {
-        $addFields: {
-          avgRanking: { $avg: '$ranking.rank' },
-        },
-      },
-      {
         $match: {
           _id: { $nin: excludeIds.map((id) => new Types.ObjectId(id)) },
           gender: gender,
           category: { $in: categories },
-          $or: [{ avgRanking: { $gte: 3.5 } }, { ranking: { $exists: false } }],
         },
       },
       { $sample: { size } },
     ]);
     this.logger.debug({ randomQuestion, date: new Date() });
     return randomQuestion;
-  }
-
-  async questionId(questionId: ObjectId) {
-    const [randomQuestion] = await this.questionModel.aggregate([
-      {
-        $match: {
-          _id: questionId,
-        },
-      },
-      {
-        $addFields: {
-          avgRanking: { $avg: '$ranking.rank' },
-        },
-      },
-    ]);
-    return randomQuestion.avgRanking;
-  }
-
-  async rankQuestion(rankQuestion: RankQuestion): Promise<Question> {
-    this.logger.debug('rankQuestion', new Date());
-    const { questionId, userId, rank } = rankQuestion;
-
-    const question = await this.questionModel.findOneAndUpdate(
-      {
-        _id: questionId,
-        'ranking.userId': userId,
-      },
-      {
-        $set: { 'ranking.$.rank': rank },
-      },
-      { new: true },
-    );
-    if (question) {
-      this.logger.debug('question', new Date());
-      return question;
-    }
-
-    this.logger.debug('create a new one', new Date());
-    return this.questionModel.findByIdAndUpdate(
-      questionId,
-      {
-        $push: {
-          ranking: { userId, rank },
-        },
-      },
-      {
-        new: true,
-        upsert: true, // Create the document if it doesn't exist
-      },
-    );
   }
 }
