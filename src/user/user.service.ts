@@ -61,13 +61,11 @@ export class UserService {
     return users;
   }
 
-  @Cron('0 0 7 * * *', {
-    timeZone: 'Asia/Jerusalem',
-  })
+  @Cron('0 0 7 * * *')
   async createSendPushNotificationsForUsers(getUsersByIds?: GetUsersByIds) {
     this.logger.debug('createSendPushNotificationsForUsers running');
     let users: [User];
-    if (getUsersByIds.usersIds) {
+    if (getUsersByIds?.usersIds) {
       users = await this.userModel
         .find({ _id: { $in: getUsersByIds.usersIds } })
         .lean();
