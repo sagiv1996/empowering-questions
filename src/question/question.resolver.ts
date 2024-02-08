@@ -18,4 +18,11 @@ export class QuestionResolver {
       excludeIds,
     });
   }
+
+  @Query(() => Question)
+  findQuestionById(
+    @Args('questionId', { type: () => ID! }) questionId: ObjectId,
+  ) {
+    return this.questionService.findQuestionById({ questionId });
+  }
 }

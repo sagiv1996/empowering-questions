@@ -17,6 +17,7 @@ import {
   HarmCategory,
 } from '@google/generative-ai';
 import { FindRandomQuestionByUserId } from './dto/find-random-question-by-user-id.dto';
+import { FindQuestionById } from './dto/find-question-by-id.dto';
 
 @Injectable()
 export class QuestionService {
@@ -148,5 +149,10 @@ export class QuestionService {
     ]);
     this.logger.debug({ randomQuestion, date: new Date() });
     return randomQuestion;
+  }
+
+  async findQuestionById(findQuestionById: FindQuestionById) {
+    const { questionId: _id } = findQuestionById;
+    return this.questionModel.findById(_id).lean().orFail();
   }
 }
