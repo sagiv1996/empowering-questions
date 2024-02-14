@@ -1,10 +1,14 @@
-import { IsArray, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsArray, IsString, ValidateNested } from 'class-validator';
+import { Question } from 'src/schemas/question';
 
 export class TriggerNotifications {
   @IsString()
   fcm: string;
 
+
   @IsArray()
-  @IsString({ each: true })
-  questionsString: string[];
+  @ValidateNested({ each: true })
+  @Type(()=>Question)
+  questions: Question[];
 }

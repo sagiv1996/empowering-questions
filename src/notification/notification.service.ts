@@ -27,13 +27,13 @@ export class NotificationService {
   }
 
   async triggerNotifications(triggerNotifications: TriggerNotifications) {
-    const { fcm, questionsString } = triggerNotifications;
+    const { fcm, questions } = triggerNotifications;
 
-    const timeForNotifications = this.getRandomDates(questionsString.length, {
+    const timeForNotifications = this.getRandomDates(questions.length, {
       from: 8,
       to: 22,
     });
-    for (const [index, questionForUser] of questionsString.entries()) {
+    for (const [index, questionForUser] of questions.entries()) {
       const cronTime: Date = new Date(
         new Date().setHours(
           timeForNotifications[index].getHours(),
@@ -57,8 +57,11 @@ export class NotificationService {
             await admin.messaging().send({
               token: fcm,
               notification: {
-                title: questionForUser,
+                title: questionForUser.string,
                 body: 'tap here to get more questions.',
+              },
+              data: {
+                _id: `${questionForUser._id}`,
               },
             });
 

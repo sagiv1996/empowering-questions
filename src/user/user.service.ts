@@ -79,7 +79,7 @@ export class UserService {
       );
       this.notificationService.triggerNotifications({
         fcm: user.fcm,
-        questionsString: questions.map((question) => question.string),
+        questions,
       });
     }
   }
