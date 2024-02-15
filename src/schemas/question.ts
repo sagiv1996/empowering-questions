@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, ObjectId } from 'mongoose';
+import { HydratedDocument, ObjectId, Types } from 'mongoose';
 import { Genders } from './user';
 import { Field, Float, ID, ObjectType } from '@nestjs/graphql';
 
@@ -37,6 +37,9 @@ export class Question {
   @Field(() => Genders)
   @Prop({ type: String, required: true, enum: Genders })
   gender: Genders;
+
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'User', default: undefined }] })
+  userIdsLikes: Types.ObjectId[];
 }
 
 export const QuestionSchema = SchemaFactory.createForClass(Question);

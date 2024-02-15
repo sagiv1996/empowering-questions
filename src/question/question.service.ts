@@ -18,7 +18,7 @@ import {
 } from '@google/generative-ai';
 import { FindRandomQuestionByUserId } from './dto/find-random-question-by-user-id.dto';
 import { FindQuestionById } from './dto/find-question-by-id.dto';
-
+import { PatchUsersIds } from './dto/patch-users-ids.dto';
 @Injectable()
 export class QuestionService {
   constructor(
@@ -154,5 +154,16 @@ export class QuestionService {
   async findQuestionById(findQuestionById: FindQuestionById) {
     const { questionId: _id } = findQuestionById;
     return this.questionModel.findById(_id).lean().orFail();
+  }
+
+  async addUserIdToUserIdsLikes(patchUsersIds: PatchUsersIds) {
+    const { questionId, userId } = patchUsersIds;
+    return this.questionModel.findByIdAndUpdate(
+      questionId,
+      {
+        $addToSet: { userIdsLikes: userId },
+      },
+      { new: true },
+    );
   }
 }

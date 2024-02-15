@@ -1,4 +1,4 @@
-import { Resolver, Query, Args, ID } from '@nestjs/graphql';
+import { Resolver, Query, Args, ID, Mutation } from '@nestjs/graphql';
 import { QuestionService } from './question.service';
 import { Question } from 'src/schemas/question';
 import { ObjectId, Types } from 'mongoose';
@@ -24,5 +24,13 @@ export class QuestionResolver {
     @Args('questionId', { type: () => ID! }) questionId: ObjectId,
   ) {
     return this.questionService.findQuestionById({ questionId });
+  }
+
+  @Mutation(() => Question)
+  addUserIdToUserIdsLikes(
+    @Args('questionId', { type: () => ID! }) questionId: Types.ObjectId,
+    @Args('userId', { type: () => ID! }) userId: Types.ObjectId,
+  ) {
+    return this.questionService.addUserIdToUserIdsLikes({ questionId, userId });
   }
 }
