@@ -166,4 +166,15 @@ export class QuestionService {
       { new: true },
     );
   }
+
+  async removeUserIdToUserIdsLikes(patchUsersIds: PatchUsersIds) {
+    const { questionId, userId } = patchUsersIds;
+    return this.questionModel.findByIdAndUpdate(
+      questionId,
+      {
+        $pull: { userIdsLikes: userId },
+      },
+      { new: true },
+    );
+  }
 }

@@ -33,4 +33,15 @@ export class QuestionResolver {
   ) {
     return this.questionService.addUserIdToUserIdsLikes({ questionId, userId });
   }
+
+  @Mutation(() => Question)
+  removeUserIdToUserIdsLikes(
+    @Args('questionId', { type: () => ID! }) questionId: Types.ObjectId,
+    @Args('userId', { type: () => ID! }) userId: Types.ObjectId,
+  ) {
+    return this.questionService.removeUserIdToUserIdsLikes({
+      questionId,
+      userId,
+    });
+  }
 }
