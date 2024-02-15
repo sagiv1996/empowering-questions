@@ -2,7 +2,7 @@ import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateQuestion } from 'src/question/dto/create-question.dto';
 import { FindRandomQuestion } from 'src/question/dto/find-random-question.dto';
-import { Model, Types } from 'mongoose';
+import { Model, ObjectId, Types } from 'mongoose';
 import { Categories, Question } from 'src/schemas/question';
 import { Cron } from '@nestjs/schedule';
 import { Genders } from 'src/schemas/user';
@@ -176,5 +176,13 @@ export class QuestionService {
       },
       { new: true },
     );
+  }
+
+  async countUsersLikes(questionId: ObjectId) {
+    const { userIdsLikes } = await this.questionModel
+      .findById(questionId)
+      .select('userIdsLikes')
+      .lean();
+    return userIdsLikes?.length ?? 0;
   }
 }

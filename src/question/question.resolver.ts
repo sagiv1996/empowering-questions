@@ -1,4 +1,13 @@
-import { Resolver, Query, Args, ID, Mutation } from '@nestjs/graphql';
+import {
+  Resolver,
+  Query,
+  Args,
+  ID,
+  Mutation,
+  ResolveField,
+  Parent,
+  Float,
+} from '@nestjs/graphql';
 import { QuestionService } from './question.service';
 import { Question } from 'src/schemas/question';
 import { ObjectId, Types } from 'mongoose';
@@ -43,5 +52,11 @@ export class QuestionResolver {
       questionId,
       userId,
     });
+  }
+
+  @ResolveField(() => Float!, { defaultValue: 0 })
+  async countUsersLikes(@Parent() question: Question) {
+    const { _id } = question;
+    return this.questionService.countUsersLikes(_id);
   }
 }
