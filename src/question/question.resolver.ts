@@ -7,6 +7,7 @@ import {
   ResolveField,
   Parent,
   Float,
+  Info,
 } from '@nestjs/graphql';
 import { QuestionService } from './question.service';
 import { Question } from 'src/schemas/question';
@@ -58,5 +59,12 @@ export class QuestionResolver {
   async countUsersLikes(@Parent() question: Question) {
     const { _id } = question;
     return this.questionService.countUsersLikes(_id);
+  }
+
+  @ResolveField(() => Boolean, { nullable: true })
+  async doesUserLikeQuestion(@Parent() question: Question, @Info() info: any) {
+    const userId = info?.variableValues?.userId;
+    if (userId)
+      return this.questionService.doesUserLikeQuestion(question._id, userId);
   }
 }

@@ -185,4 +185,12 @@ export class QuestionService {
       .lean();
     return userIdsLikes?.length ?? 0;
   }
+
+  async doesUserLikeQuestion(questionId: ObjectId, userId: ObjectId) {
+    const questionIsExists = await this.questionModel.exists({
+      _id: questionId,
+      userIdsLikes: userId,
+    });
+    return !!questionIsExists;
+  }
 }
