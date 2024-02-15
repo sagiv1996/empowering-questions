@@ -3,7 +3,6 @@ import { SchedulerRegistry } from '@nestjs/schedule';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import * as admin from 'firebase-admin';
-import { ConfigService } from '@nestjs/config';
 import { CronJob } from 'cron';
 import { TriggerNotifications } from './dto/trigger-notifications.dto';
 
@@ -11,20 +10,8 @@ import { TriggerNotifications } from './dto/trigger-notifications.dto';
 export class NotificationService {
   constructor(
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    @Inject(ConfigService) configService: ConfigService,
     private readonly schedulerRegistry: SchedulerRegistry,
-  ) {
-    const projectId = configService.get<string>('project_id');
-    const privateKey = configService
-      .get<string>('private_key')
-      .replace(/\\n/g, '\n');
-    const clientEmail = configService.get<string>('client_email');
-
-    admin.initializeApp({
-      credential: admin.credential.cert({ projectId, privateKey, clientEmail }),
-      databaseURL: 'https://xxxxx.firebaseio.com',
-    });
-  }
+  ) {}
 
   async triggerNotifications(triggerNotifications: TriggerNotifications) {
     const { fcm, questions } = triggerNotifications;
