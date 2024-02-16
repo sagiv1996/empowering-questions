@@ -1,15 +1,13 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { User } from 'src/schemas/user';
-import { UpserteUser as UpsertUser } from './dto/upsert-user.dto';
-import { FindUserById } from './dto/find-user-by-id.dto';
-import { FindUsersByIds } from './dto/find-users-by-ids.dto';
+import { Model, ObjectId } from 'mongoose';
+import { Frequency, Genders, User } from 'src/schemas/user';
 import { QuestionService } from 'src/question/question.service';
 import { NotificationService } from 'src/notification/notification.service';
 import { Cron } from '@nestjs/schedule';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { Categories } from 'src/schemas/question';
 
 @Injectable()
 export class UserService {
@@ -22,46 +20,57 @@ export class UserService {
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
   ) {}
 
-  async upsertUser(upsertUser: UpsertUser): Promise<User> {
+  async upsertUser({
+    firebaseId,
+    frequency,
+    fcm,
+    gender,
+    categories,
+  }: {
+    firebaseId: string;
+    frequency: Frequency;
+    gender: Genders;
+    categories: Categories[];
+    fcm: string;
+  }): Promise<User> {
     try {
       const user = await this.userModel.findOneAndUpdate(
         {
-          firebaseId: upsertUser.firebaseId,
+          firebaseId,
         },
         {
-          firebaseId: upsertUser.firebaseId,
-          frequency: upsertUser.frequency,
-          gender: upsertUser.gender,
-          categories: upsertUser.categories,
-          fcm: upsertUser.fcm,
+          firebaseId: firebaseId,
+          frequency: frequency,
+          gender: gender,
+          categories: categories,
+          fcm: fcm,
         },
         { upsert: true, new: true },
       );
-      this.createSendPushNotificationsForUsers({
-        usersIds: [user.id],
-      });
+      this.createSendPushNotificationsForUsers([user.id]);
       return user;
     } catch (e) {
       throw e;
     }
   }
 
-  async findUserById(findUserById: FindUserById) {
-    const user = await this.userModel.findById(findUserById.userId).lean();
+  async findUserById(userFirebaseId: String) {
+    const user = await this.userModel
+      .findOne({ firebaseId: userFirebaseId })
+      .lean();
     return user;
   }
 
   @Cron('0 0 7 * * *')
-  async createSendPushNotificationsForUsers(findUsersByIds?: FindUsersByIds) {
+  async createSendPushNotificationsForUsers(usersIds?: ObjectId[]) {
     this.logger.debug('createSendPushNotificationsForUsers running');
     let users: [User];
-    if (findUsersByIds?.usersIds) {
-      users = await this.userModel
-        .find({ _id: { $in: findUsersByIds.usersIds } })
-        .lean();
+    if (usersIds) {
+      users = await this.userModel.find({ _id: { $in: usersIds } }).lean();
     } else {
       users = await this.userModel.find().lean();
     }
+    console.log({ users });
     this.logger.debug(
       `createSendPushNotificationsForUsers, users length ${users.length}`,
     );
@@ -77,10 +86,7 @@ export class UserService {
       this.logger.debug(
         `user: ${user._id}, notificationPerDay: ${notificationPerDay}, `,
       );
-      this.notificationService.triggerNotifications({
-        fcm: user.fcm,
-        questions,
-      });
+      this.notificationService.triggerNotifications(user.fcm, questions);
     }
   }
 

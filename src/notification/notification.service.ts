@@ -4,7 +4,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import * as admin from 'firebase-admin';
 import { CronJob } from 'cron';
-import { TriggerNotifications } from './dto/trigger-notifications.dto';
+import { Question } from 'src/schemas/question';
 
 @Injectable()
 export class NotificationService {
@@ -13,9 +13,7 @@ export class NotificationService {
     private readonly schedulerRegistry: SchedulerRegistry,
   ) {}
 
-  async triggerNotifications(triggerNotifications: TriggerNotifications) {
-    const { fcm, questions } = triggerNotifications;
-
+  async triggerNotifications(fcm: string, questions: Question[]) {
     const timeForNotifications = this.getRandomDates(questions.length, {
       from: 8,
       to: 22,

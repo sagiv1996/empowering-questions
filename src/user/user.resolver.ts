@@ -5,6 +5,7 @@ import {
   Resolver,
   registerEnumType,
   Query,
+  Context,
 } from '@nestjs/graphql';
 import { Frequency, Genders, User } from 'src/schemas/user';
 import { UserService } from './user.service';
@@ -29,8 +30,7 @@ export class UserResolver {
 
   @Mutation(() => User)
   upsertUser(
-    @Args('firebaseId')
-    firebaseId: string,
+    @Context() context,
     @Args('fcm')
     fcm: string,
     @Args('frequency', { type: () => Frequency })
@@ -41,7 +41,7 @@ export class UserResolver {
     categories: Categories[],
   ) {
     return this.userService.upsertUser({
-      firebaseId,
+      firebaseId: context.req.uid,
       fcm,
       frequency,
       gender,
@@ -50,17 +50,15 @@ export class UserResolver {
   }
 
   @Query(() => User)
-  findUserById(
-    @Args('userId', { type: () => ID!, nullable: true }) userId: ObjectId,
-  ) {
-    return this.userService.findUserById({ userId });
+  findUserById(@Context() context: any) {
+    return this.userService.findUserById(context.req.uid);
   }
 
   @Mutation(() => User, { nullable: true })
   createSendPushNotificationsForUsers(
     @Args('usersIds', { type: () => [ID], nullable: true })
-    usersIds?: Types.ObjectId[],
+    usersIds?: ObjectId[],
   ) {
-    return this.userService.createSendPushNotificationsForUsers({ usersIds });
+    return this.userService.createSendPushNotificationsForUsers(usersIds);
   }
 }

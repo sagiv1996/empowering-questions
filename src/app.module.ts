@@ -27,6 +27,7 @@ import * as admin from 'firebase-admin';
       driver: ApolloDriver,
       autoSchemaFile: true,
       context: async ({ req, res }) => {
+        console.log('HERE!!');
         const token = req?.headers?.authtoken?.replace('Bearer ', '');
         const { uid } = await admin.auth().verifyIdToken(token);
         req['uid'] = uid;

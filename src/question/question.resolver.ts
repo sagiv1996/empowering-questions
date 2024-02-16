@@ -8,6 +8,7 @@ import {
   Parent,
   Float,
   Info,
+  Context,
 } from '@nestjs/graphql';
 import { QuestionService } from './question.service';
 import { Question } from 'src/schemas/question';
@@ -19,40 +20,43 @@ export class QuestionResolver {
 
   @Query(() => [Question])
   findRandomQuestionsByUserId(
-    @Args('userId', { type: () => ID! }) userId: ObjectId,
+    @Context() context: any,
     @Args('excludeIds', { type: () => [ID], nullable: true, defaultValue: [] })
-    excludeIds?: Types.ObjectId[],
+    excludeIds?: ObjectId[],
   ): Promise<Question[]> {
-    return this.questionService.findRandomQuestionByUserId({
-      userId,
+    return this.questionService.findRandomQuestionByUserId(
+      context.req.uid,
       excludeIds,
-    });
+    );
   }
 
   @Query(() => Question)
   findQuestionById(
     @Args('questionId', { type: () => ID! }) questionId: ObjectId,
   ) {
-    return this.questionService.findQuestionById({ questionId });
+    return this.questionService.findQuestionById(questionId);
   }
 
   @Mutation(() => Question)
   addUserIdToUserIdsLikes(
-    @Args('questionId', { type: () => ID! }) questionId: Types.ObjectId,
-    @Args('userId', { type: () => ID! }) userId: Types.ObjectId,
+    @Context() context: any,
+    @Args('questionId', { type: () => ID! }) questionId: ObjectId,
   ) {
-    return this.questionService.addUserIdToUserIdsLikes({ questionId, userId });
+    return this.questionService.addUserIdToUserIdsLikes(
+      questionId,
+      context.req.uid,
+    );
   }
 
   @Mutation(() => Question)
   removeUserIdToUserIdsLikes(
-    @Args('questionId', { type: () => ID! }) questionId: Types.ObjectId,
-    @Args('userId', { type: () => ID! }) userId: Types.ObjectId,
+    @Context() context: any,
+    @Args('questionId', { type: () => ID! }) questionId: ObjectId,
   ) {
-    return this.questionService.removeUserIdToUserIdsLikes({
+    return this.questionService.removeUserIdToUserIdsLikes(
       questionId,
-      userId,
-    });
+      context.req.uid,
+    );
   }
 
   @ResolveField(() => Float!, { defaultValue: 0 })

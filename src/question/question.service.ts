@@ -1,7 +1,5 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { CreateQuestion } from 'src/question/dto/create-question.dto';
-import { FindRandomQuestion } from 'src/question/dto/find-random-question.dto';
 import { Model, ObjectId, Types } from 'mongoose';
 import { Categories, Question } from 'src/schemas/question';
 import { Cron } from '@nestjs/schedule';
@@ -16,9 +14,6 @@ import {
   HarmBlockThreshold,
   HarmCategory,
 } from '@google/generative-ai';
-import { FindRandomQuestionByUserId } from './dto/find-random-question-by-user-id.dto';
-import { FindQuestionById } from './dto/find-question-by-id.dto';
-import { PatchUsersIds } from './dto/patch-users-ids.dto';
 @Injectable()
 export class QuestionService {
   constructor(
@@ -103,44 +98,37 @@ export class QuestionService {
     await Promise.allSettled(promiseArray);
   }
 
-  async createQuestion(createQuestion: CreateQuestion): Promise<Question> {
-    try {
-      const question = new this.questionModel({ ...createQuestion });
-      await question.save();
-      return question;
-    } catch (error) {
-      this.logger.error({ error, date: new Date() });
-    }
-  }
-
   async findRandomQuestionByUserId(
-    findRandomQuestionByUserId: FindRandomQuestionByUserId,
+    userId: string,
+    excludeIds?: ObjectId[],
   ): Promise<Question[]> {
-    const user = await this.userService.findUserById(
-      findRandomQuestionByUserId,
-    );
+    const user = await this.userService.findUserById(userId);
     const questions = await this.findRandomQuestion({
       categories: user.categories,
       gender: user.gender,
-      excludeIds: findRandomQuestionByUserId.excludeIds,
+      excludeIds,
     });
     return questions;
   }
 
-  async findRandomQuestion(
-    findRandomQuestion: FindRandomQuestion,
-  ): Promise<Question[]> {
+  async findRandomQuestion({
+    size = 3,
+    gender,
+    categories,
+    excludeIds = [],
+  }: {
+    size?: number;
+    gender: Genders;
+    categories: Categories[];
+    excludeIds?: ObjectId[];
+  }): Promise<Question[]> {
     this.logger.debug('findRandomQuestion', new Date());
-    const {
-      size = 3,
-      gender,
-      categories,
-      excludeIds = [],
-    } = findRandomQuestion;
     const randomQuestion = await this.questionModel.aggregate([
       {
         $match: {
-          _id: { $nin: excludeIds.map((id) => new Types.ObjectId(id)) },
+          _id: {
+            $nin: excludeIds.map((e) => new Types.ObjectId(e.toString())),
+          },
           gender: gender,
           category: { $in: categories },
         },
@@ -151,13 +139,11 @@ export class QuestionService {
     return randomQuestion;
   }
 
-  async findQuestionById(findQuestionById: FindQuestionById) {
-    const { questionId: _id } = findQuestionById;
-    return this.questionModel.findById(_id).lean().orFail();
+  async findQuestionById(questionId: ObjectId) {
+    return this.questionModel.findById(questionId).lean().orFail();
   }
 
-  async addUserIdToUserIdsLikes(patchUsersIds: PatchUsersIds) {
-    const { questionId, userId } = patchUsersIds;
+  async addUserIdToUserIdsLikes(questionId: ObjectId, userId: ObjectId) {
     return this.questionModel.findByIdAndUpdate(
       questionId,
       {
@@ -167,8 +153,7 @@ export class QuestionService {
     );
   }
 
-  async removeUserIdToUserIdsLikes(patchUsersIds: PatchUsersIds) {
-    const { questionId, userId } = patchUsersIds;
+  async removeUserIdToUserIdsLikes(questionId: ObjectId, userId: ObjectId) {
     return this.questionModel.findByIdAndUpdate(
       questionId,
       {
@@ -186,10 +171,11 @@ export class QuestionService {
     return userIdsLikes?.length ?? 0;
   }
 
-  async doesUserLikeQuestion(questionId: ObjectId, userId: ObjectId) {
+  async doesUserLikeQuestion(questionId: ObjectId, userFirebaseId: string) {
+    const user = await this.userService.findUserById(userFirebaseId);
     const questionIsExists = await this.questionModel.exists({
       _id: questionId,
-      userIdsLikes: userId,
+      userIdsLikes: user._id,
     });
     return !!questionIsExists;
   }
