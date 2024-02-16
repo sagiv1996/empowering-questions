@@ -6,7 +6,6 @@ import {
   Mutation,
   ResolveField,
   Parent,
-  Info,
   Context,
   Int,
   registerEnumType,
@@ -69,10 +68,11 @@ export class QuestionResolver {
     return this.questionService.countUsersLikes(_id);
   }
 
-  @ResolveField(() => Boolean, { nullable: true })
-  async doesUserLikeQuestion(@Parent() question: Question, @Info() info: any) {
-    const userId = info?.variableValues?.userId;
-    if (userId)
-      return this.questionService.doesUserLikeQuestion(question._id, userId);
+  @ResolveField(() => Boolean, { defaultValue: false })
+  async doesUserLikeQuestion(@Parent() question: Question, @Context() context) {
+    return this.questionService.doesUserLikeQuestion(
+      question._id,
+      context.req.uid,
+    );
   }
 }
