@@ -6,14 +6,22 @@ import {
   Mutation,
   ResolveField,
   Parent,
-  Float,
   Info,
   Context,
+  Int,
+  registerEnumType,
 } from '@nestjs/graphql';
 import { QuestionService } from './question.service';
 import { Question } from 'src/schemas/question';
 import { ObjectId } from 'mongoose';
 
+enum UserAction {
+  ADD = 'add',
+  REMOVE = 'remove',
+}
+registerEnumType(UserAction, {
+  name: 'UserAction',
+});
 @Resolver(() => Question)
 export class QuestionResolver {
   constructor(private readonly questionService: QuestionService) {}
@@ -38,28 +46,24 @@ export class QuestionResolver {
   }
 
   @Mutation(() => Question)
-  addUserIdToUserIdsLikes(
+  async updateUserIdsLikes(
     @Context() context: any,
     @Args('questionId', { type: () => ID! }) questionId: ObjectId,
+    @Args('action', { type: () => UserAction! }) action: UserAction,
   ) {
-    return this.questionService.addUserIdToUserIdsLikes(
-      questionId,
-      context.req.uid,
-    );
-  }
-
-  @Mutation(() => Question)
-  removeUserIdToUserIdsLikes(
-    @Context() context: any,
-    @Args('questionId', { type: () => ID! }) questionId: ObjectId,
-  ) {
+    if (action == UserAction.ADD) {
+      return this.questionService.addUserIdToUserIdsLikes(
+        questionId,
+        context.req.uid,
+      );
+    }
     return this.questionService.removeUserIdToUserIdsLikes(
       questionId,
       context.req.uid,
     );
   }
 
-  @ResolveField(() => Float!, { defaultValue: 0 })
+  @ResolveField(() => Int!, { defaultValue: 0 })
   async countUsersLikes(@Parent() question: Question) {
     const { _id } = question;
     return this.questionService.countUsersLikes(_id);
