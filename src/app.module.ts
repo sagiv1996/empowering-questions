@@ -32,7 +32,7 @@ import * as admin from 'firebase-admin';
           req['uid'] = process.env.USER_UID_FOR_TESTING;
           return { req, res };
         }
-        const token = req?.headers?.Authorization?.replace('Bearer ', '');
+        const token = req?.headers?.authorization?.replace('Bearer ', '');
         const { uid } = await admin.auth().verifyIdToken(token);
         req['uid'] = uid;
         return { req, res };
