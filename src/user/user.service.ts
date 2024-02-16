@@ -70,7 +70,6 @@ export class UserService {
     } else {
       users = await this.userModel.find().lean();
     }
-    console.log({ users });
     this.logger.debug(
       `createSendPushNotificationsForUsers, users length ${users.length}`,
     );

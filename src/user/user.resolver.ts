@@ -10,7 +10,7 @@ import {
 import { Frequency, Genders, User } from 'src/schemas/user';
 import { UserService } from './user.service';
 import { Categories } from 'src/schemas/question';
-import { ObjectId, Types } from 'mongoose';
+import { ObjectId } from 'mongoose';
 
 registerEnumType(Frequency, {
   name: 'Frequency',

@@ -12,7 +12,7 @@ import {
 } from '@nestjs/graphql';
 import { QuestionService } from './question.service';
 import { Question } from 'src/schemas/question';
-import { ObjectId, Types } from 'mongoose';
+import { ObjectId } from 'mongoose';
 
 @Resolver(() => Question)
 export class QuestionResolver {
