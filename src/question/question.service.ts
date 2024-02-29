@@ -143,21 +143,26 @@ export class QuestionService {
     return this.questionModel.findById(questionId).lean().orFail();
   }
 
-  async addUserIdToUserIdsLikes(questionId: ObjectId, userId: ObjectId) {
+  async addUserIdToUserIdsLikes(questionId: ObjectId, userFirebaseId: string) {
+    const user = await this.userService.findUserById(userFirebaseId);
     return this.questionModel.findByIdAndUpdate(
       questionId,
       {
-        $addToSet: { userIdsLikes: userId },
+        $addToSet: { userIdsLikes: user._id },
       },
       { new: true },
     );
   }
 
-  async removeUserIdToUserIdsLikes(questionId: ObjectId, userId: ObjectId) {
+  async removeUserIdToUserIdsLikes(
+    questionId: ObjectId,
+    userFirebaseId: string,
+  ) {
+    const user = await this.userService.findUserById(userFirebaseId);
     return this.questionModel.findByIdAndUpdate(
       questionId,
       {
-        $pull: { userIdsLikes: userId },
+        $pull: { userIdsLikes: user._id },
       },
       { new: true },
     );

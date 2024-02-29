@@ -27,7 +27,6 @@ import * as admin from 'firebase-admin';
       driver: ApolloDriver,
       autoSchemaFile: true,
       context: async ({ req, res }) => {
-        console.log(req?.headers);
         if (process?.env?.NODE_ENV?.trim() === 'development') {
           req['uid'] = process.env.USER_UID_FOR_TESTING;
           return { req, res };
