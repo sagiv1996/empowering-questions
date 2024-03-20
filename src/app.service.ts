@@ -11,7 +11,7 @@ export class AppService {
     const type = this.configService.get("type");    
     const project_id = this.configService.get("project_id");    
     const private_key_id = this.configService.get("private_key_id");    
-    const private_key = this.configService.get("private_key");
+    const private_key = this.configService.get("private_key").replace(/\\n/g, '\n');
     const client_email = this.configService.get("client_email");    
     const client_id = this.configService.get("client_id");    
     const auth_uri = this.configService.get("auth_uri");    
@@ -19,7 +19,7 @@ export class AppService {
     const auth_provider_x509_cert_url = this.configService.get("auth_provider_x509_cert_url");    
     const client_x509_cert_url = this.configService.get("client_x509_cert_url");    
     const universe_domain = this.configService.get("universe_domain");    
-    const test = private_key?.replace(/\\n/g, '\n');
+    
     
     return {mongoUri,
        geminiApiKey,
