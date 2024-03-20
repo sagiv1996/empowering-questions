@@ -30,8 +30,7 @@ export class AppService {
         token_uri, 
         auth_provider_x509_cert_url, 
         client_x509_cert_url,
-        universe_domain,
-      test
+        universe_domain
       };
   }
 }
