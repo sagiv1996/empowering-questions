@@ -1,21 +1,21 @@
 import {
-  //  Inject, Logger, 
+   Inject, Logger, 
    Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-// import { MongooseModule } from '@nestjs/mongoose';
-// import { QuestionModule } from './question/question.module';
+import { MongooseModule } from '@nestjs/mongoose';
+import { QuestionModule } from './question/question.module';
 import { ConfigModule,
-  //  ConfigService 
+   ConfigService 
   }
     from '@nestjs/config';
-// import { GraphQLModule } from '@nestjs/graphql';
-// import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
-// import { UserModule } from './user/user.module';
-// import { NotificationModule } from './notification/notification.module';
-// import { ScheduleModule } from '@nestjs/schedule';
-// import * as admin from 'firebase-admin';
-// import { UserService } from './user/user.service';
+import { GraphQLModule } from '@nestjs/graphql';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { UserModule } from './user/user.module';
+import { NotificationModule } from './notification/notification.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import * as admin from 'firebase-admin';
+import { UserService } from './user/user.service';
 
 @Module({
   imports: [
