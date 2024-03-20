@@ -19,7 +19,7 @@ import { UserService } from './user/user.service';
 
 @Module({
   imports: [
-    // ScheduleModule.forRoot(),
+    ScheduleModule.forRoot(),
     // GraphQLModule.forRootAsync<ApolloDriverConfig>({
     //   driver: ApolloDriver,
     //   imports: [UserModule],
