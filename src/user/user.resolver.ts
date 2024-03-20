@@ -30,7 +30,7 @@ export class UserResolver {
 
   @Mutation(() => User)
   upsertUser(
-    @Context() context,
+    @Context() context: { req: { userId?: string } },
     @Args('fcm')
     fcm: string,
     @Args('frequency', { type: () => Frequency })
@@ -41,7 +41,7 @@ export class UserResolver {
     categories: Categories[],
   ) {
     return this.userService.upsertUser({
-      firebaseId: context.req.uid,
+      firebaseId: context.req.userId,
       fcm,
       frequency,
       gender,
@@ -50,8 +50,8 @@ export class UserResolver {
   }
 
   @Query(() => User)
-  findUserById(@Context() context: any) {
-    return this.userService.findUserById(context.req.uid);
+  findUserById(@Context() context: { req: { userId?: ObjectId } }) {
+    return this.userService.findUserById(context.req.userId);
   }
 
   @Mutation(() => User, { nullable: true })

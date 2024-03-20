@@ -1,4 +1,4 @@
-import { Inject, Injectable, forwardRef } from '@nestjs/common';
+import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId, Types } from 'mongoose';
 import { Categories, Question } from 'src/schemas/question';
@@ -6,8 +6,6 @@ import { Cron } from '@nestjs/schedule';
 import { Genders } from 'src/schemas/user';
 import { ConfigService } from '@nestjs/config';
 import { retry } from 'ts-retry-promise';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
 import { UserService } from 'src/user/user.service';
 import {
   GoogleGenerativeAI,
@@ -16,12 +14,12 @@ import {
 } from '@google/generative-ai';
 @Injectable()
 export class QuestionService {
+  private readonly logger = new Logger(QuestionService.name);
   constructor(
     @InjectModel(Question.name) private questionModel: Model<Question>,
     @Inject(forwardRef(() => UserService))
     private readonly userService: UserService,
     private readonly configService: ConfigService,
-    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
   ) {}
 
   private readonly geminiApiKey =
@@ -60,6 +58,7 @@ export class QuestionService {
 
   @Cron('0 0 5 * * *')
   async createQuestionFromAi() {
+    this.logger.log('Try to create a random questions from AI');
     const promiseArray: Promise<void>[] = [];
     for (const category in Categories) {
       for (const gender in Genders) {
@@ -90,16 +89,38 @@ export class QuestionService {
           },
           {
             retries: 3,
+            logger(msg) {
+              Logger.debug(msg, QuestionService.name);
+            },
           },
         );
         promiseArray.push(promise);
       }
     }
     await Promise.allSettled(promiseArray);
+    this.logger.log('The new records from AI are created');
+  }
+
+  async randomLikesQuestionsByUserId(
+    userId: ObjectId,
+    excludeIds?: ObjectId[],
+  ) {
+    const randomQuestion = await this.questionModel.aggregate([
+      {
+        $match: {
+          userIdsLikes: userId,
+          _id: {
+            $nin: excludeIds.map((e) => new Types.ObjectId(e.toString())),
+          },
+        },
+      },
+      { $sample: { size: 3 } },
+    ]);
+    return randomQuestion;
   }
 
   async findRandomQuestionByUserId(
-    userId: string,
+    userId: ObjectId,
     excludeIds?: ObjectId[],
   ): Promise<Question[]> {
     const user = await this.userService.findUserById(userId);
@@ -122,7 +143,8 @@ export class QuestionService {
     categories: Categories[];
     excludeIds?: ObjectId[];
   }): Promise<Question[]> {
-    this.logger.debug('findRandomQuestion', new Date());
+    this.logger.log('Try to find a random questions');
+    this.logger.debug({ size, gender, categories, excludeIds });
     const randomQuestion = await this.questionModel.aggregate([
       {
         $match: {
@@ -135,7 +157,8 @@ export class QuestionService {
       },
       { $sample: { size } },
     ]);
-    this.logger.debug({ randomQuestion, date: new Date() });
+    this.logger.log('Random questions are finds');
+    this.logger.debug({ randomQuestion });
     return randomQuestion;
   }
 
@@ -143,26 +166,21 @@ export class QuestionService {
     return this.questionModel.findById(questionId).lean().orFail();
   }
 
-  async addUserIdToUserIdsLikes(questionId: ObjectId, userFirebaseId: string) {
-    const user = await this.userService.findUserById(userFirebaseId);
+  async addUserIdToUserIdsLikes(questionId: ObjectId, userId: ObjectId) {
     return this.questionModel.findByIdAndUpdate(
       questionId,
       {
-        $addToSet: { userIdsLikes: user._id },
+        $addToSet: { userIdsLikes: userId },
       },
       { new: true },
     );
   }
 
-  async removeUserIdToUserIdsLikes(
-    questionId: ObjectId,
-    userFirebaseId: string,
-  ) {
-    const user = await this.userService.findUserById(userFirebaseId);
+  async removeUserIdToUserIdsLikes(questionId: ObjectId, userId: ObjectId) {
     return this.questionModel.findByIdAndUpdate(
       questionId,
       {
-        $pull: { userIdsLikes: user._id },
+        $pull: { userIdsLikes: userId },
       },
       { new: true },
     );
@@ -176,11 +194,10 @@ export class QuestionService {
     return userIdsLikes?.length ?? 0;
   }
 
-  async doesUserLikeQuestion(questionId: ObjectId, userFirebaseId: string) {
-    const user = await this.userService.findUserById(userFirebaseId);
+  async doesUserLikeQuestion(questionId: ObjectId, userId: ObjectId) {
     const questionIsExists = await this.questionModel.exists({
       _id: questionId,
-      userIdsLikes: user._id,
+      userIdsLikes: userId,
     });
     return !!questionIsExists;
   }

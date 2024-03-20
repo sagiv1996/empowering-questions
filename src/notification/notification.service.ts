@@ -1,17 +1,14 @@
-import { Inject, Injectable } from '@nestjs/common';
+import {  Injectable, Logger } from '@nestjs/common';
 import { SchedulerRegistry } from '@nestjs/schedule';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
 import * as admin from 'firebase-admin';
 import { CronJob } from 'cron';
 import { Question } from 'src/schemas/question';
 
 @Injectable()
 export class NotificationService {
-  constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    private readonly schedulerRegistry: SchedulerRegistry,
-  ) {}
+  private readonly logger = new Logger(NotificationService.name);
+
+  constructor(private readonly schedulerRegistry: SchedulerRegistry) {}
 
   async triggerNotifications(fcm: string, questions: Question[]) {
     const timeForNotifications = this.getRandomDates(questions.length, {
@@ -68,7 +65,21 @@ export class NotificationService {
     }
   }
 
-  getRandomDates(
+  deleteNotificationPerFcm(fcm: string) :void{
+    this.logger.log('Deleting cron jobs for user');
+
+    const cronJobsToDelete = Array.from(
+      this.schedulerRegistry.getCronJobs().keys(),
+    ).filter((jobName) => jobName.includes(fcm));
+
+    cronJobsToDelete.forEach((cronJob) => {
+      this.schedulerRegistry.deleteCronJob(cronJob);
+    });
+
+    this.logger.log(`Deleted ${cronJobsToDelete.length} cron jobs`);
+  }
+
+  private getRandomDates(
     sumOfNotifications: number,
     { from = 8, to = 21 }: { from?: number; to?: number },
   ): Date[] {

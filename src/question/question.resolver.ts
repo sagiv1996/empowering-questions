@@ -27,12 +27,24 @@ export class QuestionResolver {
 
   @Query(() => [Question])
   findRandomQuestionsByUserId(
-    @Context() context: any,
+    @Context() context: { req: { userId?: ObjectId } },
     @Args('excludeIds', { type: () => [ID], nullable: true, defaultValue: [] })
     excludeIds?: ObjectId[],
   ): Promise<Question[]> {
     return this.questionService.findRandomQuestionByUserId(
-      context.req.uid,
+      context.req.userId,
+      excludeIds,
+    );
+  }
+
+  @Query(() => [Question])
+  randomLikesQuestionsByUserId(
+    @Context() context: { req: { userId?: ObjectId } },
+    @Args('excludeIds', { type: () => [ID], nullable: true, defaultValue: [] })
+    excludeIds?: ObjectId[],
+  ): Promise<Question[]> {
+    return this.questionService.randomLikesQuestionsByUserId(
+      context.req.userId,
       excludeIds,
     );
   }
@@ -46,19 +58,19 @@ export class QuestionResolver {
 
   @Mutation(() => Question)
   async updateUserIdsLikes(
-    @Context() context: any,
+    @Context() context: { req: { userId?: ObjectId } },
     @Args('questionId', { type: () => ID! }) questionId: ObjectId,
     @Args('action', { type: () => UserAction! }) action: UserAction,
   ) {
     if (action == UserAction.ADD) {
       return this.questionService.addUserIdToUserIdsLikes(
         questionId,
-        context.req.uid,
+        context.req.userId,
       );
     }
     return this.questionService.removeUserIdToUserIdsLikes(
       questionId,
-      context.req.uid,
+      context.req.userId,
     );
   }
 
@@ -69,10 +81,13 @@ export class QuestionResolver {
   }
 
   @ResolveField(() => Boolean, { defaultValue: false })
-  async doesUserLikeQuestion(@Parent() question: Question, @Context() context) {
+  async doesUserLikeQuestion(
+    @Parent() question: Question,
+    @Context() context: { req: { userId?: ObjectId } },
+  ) {
     return this.questionService.doesUserLikeQuestion(
       question._id,
-      context.req.uid,
+      context.req.userId,
     );
   }
 }

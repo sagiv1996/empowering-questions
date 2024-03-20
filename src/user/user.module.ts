@@ -6,13 +6,13 @@ import { User, UserSchema } from 'src/schemas/user';
 import { QuestionModule } from 'src/question/question.module';
 import { NotificationModule } from 'src/notification/notification.module';
 
-@Module({
-  imports: [
+@Module({ 
+  imports: [ 
     forwardRef(()=>QuestionModule),
     NotificationModule,
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
   ],
   providers: [UserService, UserResolver],
   exports: [UserService],
-})
-export class UserModule {}
+})  
+export class UserModule {}  

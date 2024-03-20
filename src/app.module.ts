@@ -1,4 +1,4 @@
-import { Inject, Module } from '@nestjs/common';
+import { Inject, Logger, Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -9,38 +9,40 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { UserModule } from './user/user.module';
 import { NotificationModule } from './notification/notification.module';
 import { ScheduleModule } from '@nestjs/schedule';
-import { WinstonModule } from 'nest-winston';
-import { transports } from 'winston';
 import * as admin from 'firebase-admin';
+import { UserService } from './user/user.service';
 
 @Module({
   imports: [
-    WinstonModule.forRoot({
-      transports: [
-        new transports.File({ filename: 'combined.log', level: 'debug' }),
-        new transports.File({ filename: 'error.log', level: 'error' }),
-        new transports.Console(),
-      ],
-    }),
     ScheduleModule.forRoot(),
-    GraphQLModule.forRoot<ApolloDriverConfig>({
+    GraphQLModule.forRootAsync<ApolloDriverConfig>({
       driver: ApolloDriver,
-      autoSchemaFile: true,
-      context: async ({ req, res }) => {
-        if (process?.env?.NODE_ENV?.trim() === 'development') {
-          req['uid'] = process.env.USER_UID_FOR_TESTING;
+      imports: [UserModule],
+      useFactory: async (userService: UserService) => ({
+        autoSchemaFile: true,
+        context: async ({ req, res }) => {
+          let firebaseId: string;
+          if (process?.env?.NODE_ENV?.trim() === 'development') {
+            firebaseId = process.env.USER_UID_FOR_TESTING;
+            Logger.log("Running on test mode", AppModule.name);
+          } else {
+            const token = req?.headers?.authorization?.replace('Bearer ', '');
+            const { uid } = await admin.auth().verifyIdToken(token);
+            firebaseId = uid;
+          }
+          if (req.body.operationName === 'upsertUser') {
+            req['userId'] = firebaseId;
+          } else {
+            const user = await userService.findUserIdByFirebaseId(firebaseId);
+            req['userId'] = user?._id;
+          }
           return { req, res };
-        }
-        const token = req?.headers?.authorization?.replace('Bearer ', '');
-        const { uid } = await admin.auth().verifyIdToken(token);
-        req['uid'] = uid;
-        return { req, res };
-      },
+        },
+      }),
+      inject: [UserService],
     }),
     ConfigModule.forRoot({
       isGlobal: true,
-      cache: true,
-      envFilePath: ['.env', '.env.firebase'],
     }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
