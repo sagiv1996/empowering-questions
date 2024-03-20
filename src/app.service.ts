@@ -19,7 +19,7 @@ export class AppService {
     const auth_provider_x509_cert_url = this.configService.get("auth_provider_x509_cert_url");    
     const client_x509_cert_url = this.configService.get("client_x509_cert_url");    
     const universe_domain = this.configService.get("universe_domain");    
-    const test = private_key.replace(/\\n/g, '\n');
+    const test = private_key?.replace(/\\n/g, '\n');
     
     return {mongoUri,
        geminiApiKey,
@@ -30,6 +30,8 @@ export class AppService {
         token_uri, 
         auth_provider_x509_cert_url, 
         client_x509_cert_url,
-        universe_domain};
+        universe_domain,
+      test
+      };
   }
 }
