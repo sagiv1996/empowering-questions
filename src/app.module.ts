@@ -1,5 +1,6 @@
 import {
-  //  Inject, Logger, 
+   Inject, 
+  //  Logger, 
    Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -9,12 +10,12 @@ import { ConfigModule,
    ConfigService 
   }
     from '@nestjs/config';
-// import { GraphQLModule } from '@nestjs/graphql';
-// import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { GraphQLModule } from '@nestjs/graphql';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 // import { UserModule } from './user/user.module';
 // import { NotificationModule } from './notification/notification.module';
 import { ScheduleModule } from '@nestjs/schedule';
-// import * as admin from 'firebase-admin';
+import * as admin from 'firebase-admin';
 // import { UserService } from './user/user.service';
 
 @Module({
@@ -45,14 +46,14 @@ import { ScheduleModule } from '@nestjs/schedule';
     //     },
     //   }),
     //   inject: [UserService],
-    // }),
+    // })    ,
     ConfigModule.forRoot({
       isGlobal: true,
     }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (config: ConfigService) => ({
-        uri: config.get<string>('MONGO_DB_URI'),
+        uri: config.get('MONGO_DB_URI'),
       }),
       inject: [ConfigService],
     }),
@@ -64,14 +65,14 @@ import { ScheduleModule } from '@nestjs/schedule';
   providers: [AppService],
 })
 export class AppModule {
-  // constructor(@Inject(ConfigService) configService: ConfigService) {
-  //   const projectId = configService.get<string>('project_id');
-  //   const privateKey = configService
-  //     .get<string>('private_key')
-  //   const clientEmail = configService.get<string>('client_email');
-  //   admin.initializeApp({
-  //     credential: admin.credential.cert({ projectId, privateKey, clientEmail }),
-  //     databaseURL: 'https://xxxxx.firebaseio.com',
-  //   });
-  // }
+  constructor(@Inject(ConfigService) configService: ConfigService) {
+    const projectId = configService.get('project_id');
+    const privateKey = configService
+      .get('private_key').replace(/\\n/g, '\n');
+    const clientEmail = configService.get('client_email');
+    admin.initializeApp({
+      credential: admin.credential.cert({ projectId, privateKey, clientEmail }),
+      databaseURL: 'https://xxxxx.firebaseio.com',
+    });
+  }
 }

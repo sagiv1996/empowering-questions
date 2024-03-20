@@ -23,7 +23,7 @@ export class QuestionService {
   ) {}
 
   private readonly geminiApiKey =
-    this.configService.get<string>('GEMINI_API_KEY');
+    this.configService.get('GEMINI_API_KEY');
 
   private readonly genAI = new GoogleGenerativeAI(this.geminiApiKey);
   private readonly model = this.genAI.getGenerativeModel({
