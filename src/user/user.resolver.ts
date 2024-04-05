@@ -28,9 +28,10 @@ registerEnumType(Categories, {
 export class UserResolver {
   constructor(private readonly userService: UserService) {}
 
+  
   @Mutation(() => User)
-  upsertUser(
-    @Context() context: { req: { userId?: string } },
+  createUser(
+    @Context() context: { req: { firebaseId?: string } },
     @Args('fcm')
     fcm: string,
     @Args('frequency', { type: () => Frequency })
@@ -40,11 +41,24 @@ export class UserResolver {
     @Args('categories', { type: () => [Categories] })
     categories: Categories[],
   ) {
-    return this.userService.upsertUser({
-      firebaseId: context.req.userId,
+    return this.userService.createUser({
+      firebaseId: context.req.firebaseId,
       fcm,
       frequency,
       gender,
+      categories,
+    });
+  }
+  @Mutation(() => User)
+  updateUser(
+    @Context() context: { req: { userId?: ObjectId } },
+    @Args('frequency', { type: () => Frequency, nullable: true })
+    frequency: Frequency,
+    @Args('categories', { type: () => [Categories], nullable: true })
+    categories: Categories[],
+  ) {
+    return this.userService.updateUser( context.req.userId, {
+      frequency,
       categories,
     });
   }

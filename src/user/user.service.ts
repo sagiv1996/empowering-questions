@@ -19,44 +19,50 @@ export class UserService {
     private readonly notificationService: NotificationService,
   ) {}
 
-  async upsertUser({
+  async createUser({
     firebaseId,
     frequency,
     fcm,
     gender,
-    categories,
-  }: {
+    categories,}: {
     firebaseId: string;
     frequency: Frequency;
     gender: Genders;
     categories: Categories[];
     fcm: string;
-  }): Promise<User> {
-    this.logger.log('Try to upsert user');
-    try {
-      const user = await this.userModel.findOneAndUpdate(
-        {
-          firebaseId,
-        },
-        {
-          firebaseId: firebaseId,
-          frequency: frequency,
-          gender: gender,
-          categories: categories,
-          fcm: fcm,
-        },
-        { upsert: true, new: true },
-      );
-      this.notificationService.deleteNotificationPerFcm(user.fcm);
-      this.createSendPushNotificationsForUsers([user.id]);
-      this.logger.log('User upserted');
-      return user;
-    } catch (error) {
-      this.logger.error('Error to upsert user', error);
+  }){
+    this.logger.log('Try to create user');
+    const user = new this.userModel({firebaseId, frequency, fcm, gender, categories});
+    try{
+    return await user.save();
+    }catch(error){
+    this.logger.log('Failed to create user. Try again later.');
       throw error;
     }
   }
 
+
+    async updateUser(userId: ObjectId, {frequency, categories}: {frequency?: Frequency, categories?: Categories[]}): Promise<User>{
+    this.logger.log('Try to update user');
+      try{
+
+        const updateFields: {frequency?:Frequency; categories?:Categories[]} = {}; 
+        if (frequency) {
+                updateFields.frequency = frequency;
+            }
+        if (categories) {
+                updateFields.categories = categories;
+            }
+
+        const user = await this.userModel.findByIdAndUpdate(userId, updateFields, { new: true });
+        return user;
+      }catch(error){
+      this.logger.log('Failed to update user. Try again later.');
+      throw error;
+      }
+    }
+
+  
   async findUserIdByFirebaseId(userFirebaseId: String) {
     const user = await this.userModel.exists({ firebaseId: userFirebaseId });
     return user;

@@ -20,7 +20,7 @@ export class QuestionService {
     @Inject(forwardRef(() => UserService))
     private readonly userService: UserService,
     private readonly configService: ConfigService,
-  ) {}
+  ) { }
 
   private readonly geminiApiKey =
     this.configService.get('GEMINI_API_KEY');
