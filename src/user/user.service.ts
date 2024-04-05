@@ -34,7 +34,9 @@ export class UserService {
     this.logger.log('Try to create user');
     const user = new this.userModel({firebaseId, frequency, fcm, gender, categories});
     try{
-    return await user.save();
+      const newUser =  await user.save();
+      this.createSendPushNotificationsForUsers([user.id]);
+      return newUser;
     }catch(error){
     this.logger.log('Failed to create user. Try again later.');
       throw error;
@@ -55,6 +57,8 @@ export class UserService {
             }
 
         const user = await this.userModel.findByIdAndUpdate(userId, updateFields, { new: true });
+        this.notificationService.deleteNotificationPerFcm(user.fcm);
+        this.createSendPushNotificationsForUsers([user.id]);
         return user;
       }catch(error){
       this.logger.log('Failed to update user. Try again later.');
