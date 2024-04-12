@@ -32,6 +32,8 @@ export class UserService {
     fcm: string;
   }){
     this.logger.log('Try to create user');
+    const user1 = await this.userModel.findOne();
+    return user1;
     const user = new this.userModel({firebaseId, frequency, fcm, gender, categories});
     try{
       const newUser =  await user.save();
