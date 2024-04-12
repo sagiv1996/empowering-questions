@@ -31,7 +31,7 @@ export class UserResolver {
   
   @Mutation(() => User)
   createUser(
-    @Context() context: { req: { firebaseId?: string } },
+    @Context() context: { req: { firebaseId: string } },
     @Args('fcm')
     fcm: string,
     @Args('frequency', { type: () => Frequency })

@@ -36,12 +36,17 @@ import { UserService } from './user/user.service';
             const { uid } = await admin.auth().verifyIdToken(token);
             firebaseId = uid;
           }
-          if (req.body.operationName === 'createUser') {
+          /**
+           *  if (req.body.operationName === 'createUser') {
             req['firebaseId'] = firebaseId;
           } else {
             const user = await userService.findUserIdByFirebaseId(firebaseId);
             req['userId'] = user?._id;
           }
+           */
+          const user = await userService.findUserIdByFirebaseId(firebaseId);
+            req['firebaseId'] = firebaseId;
+            req['userId'] = user?._id;
           return { req, res };
         },
       }),
