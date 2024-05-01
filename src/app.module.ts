@@ -1,4 +1,4 @@
-import { Inject, Module } from '@nestjs/common';
+import { Inject, , Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -38,11 +38,7 @@ export class AppModule {
     const privateKey = configService.get('private_key').replace(/\@/g, '\n');
     const clientEmail = configService.get('client_email');
     admin.initializeApp({
-      credential: admin.credential.cert({
-        apolloprojectId,
-        privateKey,
-        clientEmail,
-      }),
+      credential: admin.credential.cert({ projectId, privateKey, clientEmail }),
       databaseURL: 'https://xxxxx.firebaseio.com',
     });
   }
