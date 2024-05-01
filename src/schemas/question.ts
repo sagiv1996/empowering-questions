@@ -17,6 +17,9 @@ export type QuestionDocument = HydratedDocument<Question>;
 
 @Schema()
 export class Question {
+  @Prop()
+  _id: ObjectId;
+
   @Prop({ type: String, required: true, unique: true, index: true })
   string: string;
 

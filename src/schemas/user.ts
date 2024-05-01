@@ -17,6 +17,7 @@ export enum Genders {
 
 @Schema()
 export class User {
+  @Prop()
   _id: ObjectId;
 
   @Prop({ type: String, required: true, unique: true, index: true })
