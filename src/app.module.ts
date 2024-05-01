@@ -1,15 +1,9 @@
-import {
-   Inject, 
-   Logger, 
-   Module } from '@nestjs/common';
+import { Inject, Logger, Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { QuestionModule } from './question/question.module';
-import { ConfigModule,
-   ConfigService 
-  }
-    from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { UserModule } from './user/user.module';
@@ -17,6 +11,7 @@ import { NotificationModule } from './notification/notification.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import * as admin from 'firebase-admin';
 import { UserService } from './user/user.service';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -30,28 +25,21 @@ import { UserService } from './user/user.service';
           let firebaseId: string;
           if (process?.env?.NODE_ENV?.trim() === 'development') {
             firebaseId = process.env.USER_UID_FOR_TESTING;
-            Logger.log("Running on test mode", AppModule.name);
+            Logger.log('Running on test mode', AppModule.name);
           } else {
             const token = req?.headers?.authorization?.replace('Bearer ', '');
             const { uid } = await admin.auth().verifyIdToken(token);
             firebaseId = uid;
           }
-          /**
-           *  if (req.body.operationName === 'createUser') {
-            req['firebaseId'] = firebaseId;
-          } else {
-            const user = await userService.findUserIdByFirebaseId(firebaseId);
-            req['userId'] = user?._id;
-          }
-           */
+
           const user = await userService.findUserIdByFirebaseId(firebaseId);
-            req['firebaseId'] = firebaseId;
-            req['userId'] = user?._id;
+          req['firebaseId'] = firebaseId;
+          req['userId'] = user?._id;
           return { req, res };
         },
       }),
       inject: [UserService],
-    })    ,
+    }),
     ConfigModule.forRoot({
       isGlobal: true,
     }),
@@ -65,6 +53,7 @@ import { UserService } from './user/user.service';
     QuestionModule,
     UserModule,
     NotificationModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
@@ -72,8 +61,7 @@ import { UserService } from './user/user.service';
 export class AppModule {
   constructor(@Inject(ConfigService) configService: ConfigService) {
     const projectId = configService.get('project_id');
-    const privateKey = configService
-      .get('private_key').replace(/\@/g, '\n');
+    const privateKey = configService.get('private_key').replace(/\@/g, '\n');
     const clientEmail = configService.get('client_email');
     admin.initializeApp({
       credential: admin.credential.cert({ projectId, privateKey, clientEmail }),
