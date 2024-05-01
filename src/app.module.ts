@@ -16,30 +16,7 @@ import { AuthModule } from './auth/auth.module';
 @Module({
   imports: [
     ScheduleModule.forRoot(),
-    GraphQLModule.forRootAsync<ApolloDriverConfig>({
-      driver: ApolloDriver,
-      imports: [UserModule],
-      useFactory: async (userService: UserService) => ({
-        autoSchemaFile: true,
-        context: async ({ req, res }) => {
-          let firebaseId: string;
-          if (process?.env?.NODE_ENV?.trim() === 'development') {
-            firebaseId = process.env.USER_UID_FOR_TESTING;
-            Logger.log('Running on test mode', AppModule.name);
-          } else {
-            const token = req?.headers?.authorization?.replace('Bearer ', '');
-            const { uid } = await admin.auth().verifyIdToken(token);
-            firebaseId = uid;
-          }
 
-          const user = await userService.findUserIdByFirebaseId(firebaseId);
-          req['firebaseId'] = firebaseId;
-          req['userId'] = user?._id;
-          return { req, res };
-        },
-      }),
-      inject: [UserService],
-    }),
     ConfigModule.forRoot({
       isGlobal: true,
     }),

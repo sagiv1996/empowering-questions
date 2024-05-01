@@ -20,10 +20,9 @@ export class QuestionService {
     @Inject(forwardRef(() => UserService))
     private readonly userService: UserService,
     private readonly configService: ConfigService,
-  ) { }
+  ) {}
 
-  private readonly geminiApiKey =
-    this.configService.get('GEMINI_API_KEY');
+  private readonly geminiApiKey = this.configService.get('GEMINI_API_KEY');
 
   private readonly genAI = new GoogleGenerativeAI(this.geminiApiKey);
   private readonly model = this.genAI.getGenerativeModel({
@@ -102,15 +101,17 @@ export class QuestionService {
   }
 
   async randomLikesQuestionsByUserId(
-    userId: ObjectId,
-    excludeIds?: ObjectId[],
+    userId: Types.ObjectId,
+    excludeIds?: Types.ObjectId[],
   ) {
     const randomQuestion = await this.questionModel.aggregate([
       {
         $match: {
           userIdsLikes: userId,
           _id: {
-            $nin: excludeIds.map((e) => new Types.ObjectId(e.toString())),
+            $nin: Array.isArray(excludeIds)
+              ? excludeIds.map((e) => new Types.ObjectId(e.toString()))
+              : [excludeIds],
           },
         },
       },
@@ -120,8 +121,8 @@ export class QuestionService {
   }
 
   async findRandomQuestionByUserId(
-    userId: ObjectId,
-    excludeIds?: ObjectId[],
+    userId: Types.ObjectId,
+    excludeIds?: Types.ObjectId[],
   ): Promise<Question[]> {
     const user = await this.userService.findUserById(userId);
     const questions = await this.findRandomQuestion({
@@ -141,7 +142,7 @@ export class QuestionService {
     size?: number;
     gender: Genders;
     categories: Categories[];
-    excludeIds?: ObjectId[];
+    excludeIds?: Types.ObjectId[];
   }): Promise<Question[]> {
     this.logger.log('Try to find a random questions');
     this.logger.debug({ size, gender, categories, excludeIds });
@@ -149,7 +150,9 @@ export class QuestionService {
       {
         $match: {
           _id: {
-            $nin: excludeIds.map((e) => new Types.ObjectId(e.toString())),
+            $nin: Array.isArray(excludeIds)
+              ? excludeIds.map((e) => new Types.ObjectId(e.toString()))
+              : [excludeIds],
           },
           gender: gender,
           category: { $in: categories },
@@ -162,11 +165,14 @@ export class QuestionService {
     return randomQuestion;
   }
 
-  async findQuestionById(questionId: ObjectId) {
+  async findQuestionById(questionId: Types.ObjectId) {
     return this.questionModel.findById(questionId).lean().orFail();
   }
 
-  async addUserIdToUserIdsLikes(questionId: ObjectId, userId: ObjectId) {
+  async addUserIdToUserIdsLikes(
+    questionId: Types.ObjectId,
+    userId: Types.ObjectId,
+  ) {
     return this.questionModel.findByIdAndUpdate(
       questionId,
       {
@@ -176,7 +182,10 @@ export class QuestionService {
     );
   }
 
-  async removeUserIdToUserIdsLikes(questionId: ObjectId, userId: ObjectId) {
+  async removeUserIdToUserIdsLikes(
+    questionId: Types.ObjectId,
+    userId: Types.ObjectId,
+  ) {
     return this.questionModel.findByIdAndUpdate(
       questionId,
       {
@@ -186,7 +195,7 @@ export class QuestionService {
     );
   }
 
-  async countUsersLikes(questionId: ObjectId) {
+  async countUsersLikes(questionId: Types.ObjectId) {
     const { userIdsLikes } = await this.questionModel
       .findById(questionId)
       .select('userIdsLikes')
@@ -194,7 +203,10 @@ export class QuestionService {
     return userIdsLikes?.length ?? 0;
   }
 
-  async doesUserLikeQuestion(questionId: ObjectId, userId: ObjectId) {
+  async doesUserLikeQuestion(
+    questionId: Types.ObjectId,
+    userId: Types.ObjectId,
+  ) {
     const questionIsExists = await this.questionModel.exists({
       _id: questionId,
       userIdsLikes: userId,
