@@ -1,16 +1,13 @@
-import { Inject, Logger, Module } from '@nestjs/common';
+import { Inject, Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { QuestionModule } from './question/question.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { GraphQLModule } from '@nestjs/graphql';
-import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { UserModule } from './user/user.module';
 import { NotificationModule } from './notification/notification.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import * as admin from 'firebase-admin';
-import { UserService } from './user/user.service';
 import { AuthModule } from './auth/auth.module';
 
 @Module({
@@ -41,7 +38,11 @@ export class AppModule {
     const privateKey = configService.get('private_key').replace(/\@/g, '\n');
     const clientEmail = configService.get('client_email');
     admin.initializeApp({
-      credential: admin.credential.cert({ projectId, privateKey, clientEmail }),
+      credential: admin.credential.cert({
+        apolloprojectId,
+        privateKey,
+        clientEmail,
+      }),
       databaseURL: 'https://xxxxx.firebaseio.com',
     });
   }
