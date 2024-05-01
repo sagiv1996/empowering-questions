@@ -29,11 +29,17 @@ export class AuthGuard implements CanActivate {
       const { uid } = await admin.auth().verifyIdToken(token);
       firebaseId = uid;
     }
+    if (
+      firebaseId &&
+      (request.method === 'POST' || request.originalUrl === '/user')
+    ) {
+      request['firebaseId'] = firebaseId;
+      return true;
+    }
     const user = await this.userService.findUserIdByFirebaseId(firebaseId);
     if (!user) {
       throw new UnauthorizedException();
     }
-    request['firebaseId'] = firebaseId;
     request['userId'] = user._id;
 
     return true;
