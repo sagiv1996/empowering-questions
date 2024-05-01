@@ -1,7 +1,7 @@
 import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { Frequency, Genders, User } from 'src/schemas/user';
+import { Frequency, User, UserDocument } from 'src/schemas/user';
 import { QuestionService } from 'src/question/question.service';
 import { NotificationService } from 'src/notification/notification.service';
 import { Cron } from '@nestjs/schedule';
@@ -34,7 +34,7 @@ export class UserService {
         categories,
       });
       const newUser = await user.save();
-      this.createSendPushNotificationsForUsers({ usersIds: [newUser.id] });
+      this.createSendPushNotificationsForUsers({ usersIds: [newUser._id] });
       return newUser;
     } catch (error) {
       this.logger.log('Failed to create user. Try again later.');
@@ -45,7 +45,7 @@ export class UserService {
   async updateUser(
     userId: Types.ObjectId,
     updateUserDto: UpdateUserDto,
-  ): Promise<User> {
+  ): Promise<UserDocument> {
     this.logger.log('Try to update user');
     console.log(`userId ${userId} updateUserDto ${updateUserDto.frequency}`);
 
@@ -65,9 +65,9 @@ export class UserService {
         updateFields,
         { new: true },
       );
-      // this.notificationService.deleteNotificationPerFcm(user.fcm);
+      this.notificationService.deleteNotificationPerFcm(user.fcm);
 
-      // this.createSendPushNotificationsForUsers({ usersIds: [user.id] });
+      this.createSendPushNotificationsForUsers({ usersIds: [user._id] });
       return user;
     } catch (error) {
       this.logger.log('Failed to update user. Try again later.');
@@ -89,7 +89,7 @@ export class UserService {
   async createSendPushNotificationsForUsers(
     sendPushNotificationsDto: SendPushNotificationsDto,
   ) {
-    let users: [User];
+    let users: [UserDocument];
     const { usersIds } = sendPushNotificationsDto;
     if (usersIds) {
       users = await this.userModel.find({ _id: { $in: usersIds } }).lean();

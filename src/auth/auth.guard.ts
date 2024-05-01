@@ -34,7 +34,7 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException();
     }
     request['firebaseId'] = firebaseId;
-    request['userId'] = user?._id;
+    request['userId'] = user._id;
 
     return true;
   }

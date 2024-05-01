@@ -10,7 +10,6 @@ const bootstrap = async () => {
       transform: true,
       transformOptions: { enableImplicitConversion: true },
     }),
-
   );
 };
 bootstrap();

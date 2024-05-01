@@ -1,7 +1,7 @@
 import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, ObjectId, Types } from 'mongoose';
-import { Categories, Question } from 'src/schemas/question';
+import { Model, Types } from 'mongoose';
+import { Categories, Question, QuestionDocument } from 'src/schemas/question';
 import { Cron } from '@nestjs/schedule';
 import { Genders } from 'src/schemas/user';
 import { ConfigService } from '@nestjs/config';
@@ -123,7 +123,7 @@ export class QuestionService {
   async findRandomQuestionByUserId(
     userId: Types.ObjectId,
     excludeIds?: Types.ObjectId[],
-  ): Promise<Question[]> {
+  ): Promise<QuestionDocument[]> {
     const user = await this.userService.findUserById(userId);
     const questions = await this.findRandomQuestion({
       categories: user.categories,
@@ -143,7 +143,7 @@ export class QuestionService {
     gender: Genders;
     categories: Categories[];
     excludeIds?: Types.ObjectId[];
-  }): Promise<Question[]> {
+  }): Promise<QuestionDocument[]> {
     this.logger.log('Try to find a random questions');
     this.logger.debug({ size, gender, categories, excludeIds });
     const randomQuestion = await this.questionModel.aggregate([

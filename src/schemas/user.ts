@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, ObjectId } from 'mongoose';
+import { HydratedDocument } from 'mongoose';
 import { Categories } from './question';
 
 export type UserDocument = HydratedDocument<User>;
@@ -15,11 +15,8 @@ export enum Genders {
   'female' = 'female',
 }
 
-@Schema()
+@Schema({ timestamps: true })
 export class User {
-  @Prop()
-  _id: ObjectId;
-
   @Prop({ type: String, required: true, unique: true, index: true })
   firebaseId: String;
 

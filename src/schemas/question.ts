@@ -15,11 +15,8 @@ export enum Categories {
 
 export type QuestionDocument = HydratedDocument<Question>;
 
-@Schema()
+@Schema({ timestamps: true })
 export class Question {
-  @Prop()
-  _id: ObjectId;
-
   @Prop({ type: String, required: true, unique: true, index: true })
   string: string;
 

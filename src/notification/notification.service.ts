@@ -1,8 +1,8 @@
-import {  Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import * as admin from 'firebase-admin';
 import { CronJob } from 'cron';
-import { Question } from 'src/schemas/question';
+import { QuestionDocument } from 'src/schemas/question';
 
 @Injectable()
 export class NotificationService {
@@ -10,7 +10,7 @@ export class NotificationService {
 
   constructor(private readonly schedulerRegistry: SchedulerRegistry) {}
 
-  async triggerNotifications(fcm: string, questions: Question[]) {
+  async triggerNotifications(fcm: string, questions: QuestionDocument[]) {
     const timeForNotifications = this.getRandomDates(questions.length, {
       from: 8,
       to: 22,
@@ -65,7 +65,7 @@ export class NotificationService {
     }
   }
 
-  deleteNotificationPerFcm(fcm: string) :void{
+  deleteNotificationPerFcm(fcm: string): void {
     this.logger.log('Deleting cron jobs for user');
 
     const cronJobsToDelete = Array.from(

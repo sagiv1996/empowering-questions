@@ -12,7 +12,6 @@ import { QuestionService } from './question.service';
 import { Types } from 'mongoose';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { customRequest } from 'src/interfaces/custom-request.interface';
-import { Question } from 'src/schemas/question';
 
 @UseGuards(AuthGuard)
 @Controller('question')
@@ -25,7 +24,7 @@ export class QuestionController {
   async findRandomQuestionsByUserId(
     @Req() req: customRequest,
     @Query('excludeIds') excludeIds?: Types.ObjectId[],
-  ): Promise<Question[]> {
+  ) {
     return this.questionService.findRandomQuestionByUserId(
       req.userId,
       excludeIds,
@@ -35,7 +34,7 @@ export class QuestionController {
   async randomLikesQuestionsByUserId(
     @Req() req: customRequest,
     @Query('excludeIds') excludeIds?: Types.ObjectId[],
-  ): Promise<Question[]> {
+  ) {
     return this.questionService.randomLikesQuestionsByUserId(
       req.userId,
       excludeIds,
@@ -43,9 +42,7 @@ export class QuestionController {
   }
 
   @Get(':questionId')
-  async findQuestionById(
-    @Param('questionId') questionId: Types.ObjectId,
-  ): Promise<Question> {
+  async findQuestionById(@Param('questionId') questionId: Types.ObjectId) {
     return this.questionService.findQuestionById(questionId);
   }
 
@@ -53,7 +50,7 @@ export class QuestionController {
   async updateUserIdsLikes(
     @Req() req: customRequest,
     @Param('questionId') questionId: Types.ObjectId,
-  ): Promise<Question> {
+  ) {
     // if (action == UserAction.ADD) {
     return this.questionService.addUserIdToUserIdsLikes(questionId, req.userId);
     // }
@@ -61,9 +58,7 @@ export class QuestionController {
   }
 
   @Get(':questionId/count-likes')
-  async countUsersLikes(
-    @Param('questionId') questionId: Types.ObjectId,
-  ): Promise<number> {
+  async countUsersLikes(@Param('questionId') questionId: Types.ObjectId) {
     return this.questionService.countUsersLikes(questionId);
   }
 }
