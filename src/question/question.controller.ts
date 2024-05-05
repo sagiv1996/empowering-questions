@@ -14,10 +14,7 @@ import { Types } from 'mongoose';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { customRequest } from 'src/interfaces/custom-request.interface';
 
-enum ActionsTypes {
-  ADD,
-  REMOVE,
-}
+
 
 @UseGuards(AuthGuard)
 @Controller('question')
@@ -56,9 +53,9 @@ export class QuestionController {
   async updateUserIdsLikes(
     @Req() req: customRequest,
     @Param('questionId') questionId: Types.ObjectId,
-    @Param('action') action: ActionsTypes,
+    @Param('action') action: String,
   ) {
-    if (action == ActionsTypes.ADD) {
+    if (action == 'add') {
       return this.questionService.addUserIdToUserIdsLikes(
         questionId,
         req.userId,
