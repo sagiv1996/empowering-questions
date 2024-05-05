@@ -4,6 +4,7 @@ import {
   Inject,
   Param,
   Post,
+  Put,
   Query,
   Req,
   UseGuards,
@@ -12,6 +13,11 @@ import { QuestionService } from './question.service';
 import { Types } from 'mongoose';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { customRequest } from 'src/interfaces/custom-request.interface';
+
+enum ActionsTypes {
+  ADD,
+  REMOVE,
+}
 
 @UseGuards(AuthGuard)
 @Controller('question')
@@ -46,15 +52,22 @@ export class QuestionController {
     return this.questionService.findQuestionById(questionId);
   }
 
-  @Post('update-likes/:questionId/:action')
+  @Put('update-likes/:questionId/:action')
   async updateUserIdsLikes(
     @Req() req: customRequest,
     @Param('questionId') questionId: Types.ObjectId,
+    @Param('action') action: ActionsTypes,
   ) {
-    // if (action == UserAction.ADD) {
-    return this.questionService.addUserIdToUserIdsLikes(questionId, req.userId);
-    // }
-    // return this.questionService.removeUserIdToUserIdsLikes(questionId, userId);
+    if (action == ActionsTypes.ADD) {
+      return this.questionService.addUserIdToUserIdsLikes(
+        questionId,
+        req.userId,
+      );
+    }
+    return this.questionService.removeUserIdToUserIdsLikes(
+      questionId,
+      req.userId,
+    );
   }
 
   @Get(':questionId/count-likes')
