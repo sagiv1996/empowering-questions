@@ -31,7 +31,8 @@ export class AuthGuard implements CanActivate {
     }
     if (
       firebaseId &&
-      (request.method === 'POST' || request.originalUrl === '/user')
+      request.method === 'POST' &&
+      request.originalUrl === '/user'
     ) {
       request['firebaseId'] = firebaseId;
       return true;

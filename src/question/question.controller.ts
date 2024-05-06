@@ -3,7 +3,6 @@ import {
   Get,
   Inject,
   Param,
-  Post,
   Put,
   Query,
   Req,
@@ -13,8 +12,6 @@ import { QuestionService } from './question.service';
 import { Types } from 'mongoose';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { customRequest } from 'src/interfaces/custom-request.interface';
-
-
 
 @UseGuards(AuthGuard)
 @Controller('question')
