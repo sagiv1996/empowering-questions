@@ -55,7 +55,7 @@ export class QuestionService {
     },
   ];
 
-  @Cron('0 0 5 * * *')
+  @Cron('0 0 5 * * *', { timeZone: 'Asia/Jerusalem' })
   async createQuestionFromAi() {
     this.logger.log('Try to create a random questions from AI');
     const promiseArray: Promise<void>[] = [];

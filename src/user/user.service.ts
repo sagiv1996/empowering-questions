@@ -85,7 +85,7 @@ export class UserService {
     return user;
   }
 
-  @Cron('0 0 7 * * *')
+  @Cron('0 0 7 * * *', { timeZone: 'Asia/Jerusalem' })
   async createSendPushNotificationsForUsers(
     sendPushNotificationsDto: SendPushNotificationsDto,
   ) {
