@@ -87,15 +87,14 @@ export class UserService {
 
   @Cron('0 0 7 * * *', { timeZone: 'Asia/Jerusalem' })
   async createSendPushNotificationsForUsers(
-    sendPushNotificationsDto: SendPushNotificationsDto,
+    sendPushNotificationsDto: SendPushNotificationsDto = {},
   ) {
-    let users: [UserDocument];
+    const query = {};
     const { usersIds } = sendPushNotificationsDto;
     if (usersIds) {
-      users = await this.userModel.find({ _id: { $in: usersIds } }).lean();
-    } else {
-      users = await this.userModel.find().lean();
+      query['_id'] = { $in: usersIds };
     }
+    const users = await this.userModel.find(query).lean();
     this.logger.log(
       `Try to create push notification for ${users.length} users`,
     );
