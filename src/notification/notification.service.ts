@@ -39,8 +39,8 @@ export class NotificationService {
             await admin.messaging().send({
               token: fcm,
               notification: {
-                title: questionForUser.string,
-                body: 'tap here to get more questions.',
+                title: 'זה זמן להעצים את עצמי',
+                body: questionForUser.string,
               },
               data: {
                 _id: `${questionForUser._id}`,
