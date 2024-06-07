@@ -132,6 +132,19 @@ export class QuestionService {
     });
     return questions;
   }
+  async findRandomQuestionByUserId(
+    userId: Types.ObjectId,
+    excludeIds?: Types.ObjectId[],
+  ): Promise<QuestionDocument> {
+    const user = await this.userService.findUserById(userId);
+    const [question] = await this.findRandomQuestion({
+      categories: user.categories,
+      gender: user.gender,
+      excludeIds,
+      size: 1,
+    });
+    return question;
+  }
 
   async findRandomQuestion({
     size = 3,

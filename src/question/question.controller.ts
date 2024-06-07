@@ -30,6 +30,16 @@ export class QuestionController {
       excludeIds,
     );
   }
+  @Get('random-question')
+  async findRandomQuestionByUserId(
+    @Req() req: customRequest,
+    @Query('excludeIds') excludeIds?: Types.ObjectId[],
+  ) {
+    return this.questionService.findRandomQuestionByUserId(
+      req.userId,
+      excludeIds,
+    );
+  }
   @Get('random-likes')
   async randomLikesQuestionsByUserId(
     @Req() req: customRequest,
