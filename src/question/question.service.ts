@@ -120,7 +120,7 @@ export class QuestionService {
     return randomQuestion;
   }
 
-  async findRandomQuestionByUserId(
+  async findRandomQuestionsByUserId(
     userId: Types.ObjectId,
     excludeIds?: Types.ObjectId[],
   ): Promise<QuestionDocument[]> {

@@ -20,12 +20,12 @@ export class QuestionController {
     @Inject(QuestionService) private readonly questionService: QuestionService,
   ) {}
 
-  @Get('random')
+  @Get('random-questions')
   async findRandomQuestionsByUserId(
     @Req() req: customRequest,
     @Query('excludeIds') excludeIds?: Types.ObjectId[],
   ) {
-    return this.questionService.findRandomQuestionByUserId(
+    return this.questionService.findRandomQuestionsByUserId(
       req.userId,
       excludeIds,
     );
