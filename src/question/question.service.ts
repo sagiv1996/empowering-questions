@@ -2,16 +2,9 @@ import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Categories, Question, QuestionDocument } from 'src/schemas/question';
-import { Cron } from '@nestjs/schedule';
 import { Genders } from 'src/schemas/user';
 import { ConfigService } from '@nestjs/config';
-import { retry } from 'ts-retry-promise';
 import { UserService } from 'src/user/user.service';
-import {
-  GoogleGenerativeAI,
-  HarmBlockThreshold,
-  HarmCategory,
-} from '@google/generative-ai';
 @Injectable()
 export class QuestionService {
   private readonly logger = new Logger(QuestionService.name);
@@ -21,84 +14,6 @@ export class QuestionService {
     private readonly userService: UserService,
     private readonly configService: ConfigService,
   ) {}
-
-  private readonly geminiApiKey = this.configService.get('GEMINI_API_KEY');
-
-  private readonly genAI = new GoogleGenerativeAI(this.geminiApiKey);
-  private readonly model = this.genAI.getGenerativeModel({
-    model: 'gemini-pro',
-  });
-
-  private readonly generationConfig = {
-    temperature: 0.9,
-    topK: 1,
-    topP: 1,
-    maxOutputTokens: 2048,
-  };
-
-  private readonly safetySettings = [
-    {
-      category: HarmCategory.HARM_CATEGORY_HARASSMENT,
-      threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-    },
-    {
-      category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-      threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-    },
-    {
-      category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
-      threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-    },
-    {
-      category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-      threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-    },
-  ];
-
-  @Cron('0 0 5 * * *', { timeZone: 'Asia/Jerusalem' })
-  async createQuestionFromAi() {
-    this.logger.log('Try to create a random questions from AI');
-    const promiseArray: Promise<void>[] = [];
-    for (const category in Categories) {
-      for (const gender in Genders) {
-        const promise = retry(
-          async () => {
-            const text = `Create an empowering question for me that deals with ${category} for ${gender}, the sentence should be a maximum of 30 characters, and translated into Hebrew. It is important that the result be only the sentence in Hebrew.`;
-            const result = await this.model.generateContent({
-              contents: [
-                {
-                  role: 'user',
-                  parts: [
-                    {
-                      text,
-                    },
-                  ],
-                },
-              ],
-              generationConfig: this.generationConfig,
-              safetySettings: this.safetySettings,
-            });
-
-            const question = new this.questionModel({
-              gender,
-              category,
-              string: result.response.text(),
-            });
-            await question.save();
-          },
-          {
-            retries: 3,
-            logger(msg) {
-              Logger.debug(msg, QuestionService.name);
-            },
-          },
-        );
-        promiseArray.push(promise);
-      }
-    }
-    await Promise.allSettled(promiseArray);
-    this.logger.log('The new records from AI are created');
-  }
 
   async randomLikesQuestionsByUserId(
     userId: Types.ObjectId,
